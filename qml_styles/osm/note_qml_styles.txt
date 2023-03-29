@@ -1,0 +1,6 @@
+.qml files for layer styles in crop folder are based on libre champs qml styles
+https://gitlab.com/champs-libres/public/champs-libres-qgis-osm-style/-/tree/master/qml
+
+slightly modified for own use 
+- e.g. changed / deleted some symbols for landuse display 
+	because not in qgis anymore -> were displayed as question marks
