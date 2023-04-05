@@ -1,0 +1,302 @@
+gfk_code,gfk_text,zensus,alt_rel
+31001_1000,Wohngebäude,1,1
+31001_1010,Wohnhaus,1,1
+31001_1020,Wohnheim,1,1
+31001_1021,Kinderheim,1,1
+31001_1022,Seniorenheim,1,1
+31001_1023,Schwesternwohnheim,1,1
+31001_1024,"Studenten-, Schülerwohnheim",1,1
+31001_1025,Schullandheim,0,1
+31001_1100,Gemischt genutztes Gebäude mit Wohnen,1,1
+31001_1110,Wohngebäude mit Gemeinbedarf,1,1
+31001_1120,Wohngebäude mit Handel und Dienstleistungen,1,1
+31001_1121,Wohn- und Verwaltungsgebäude,1,1
+31001_1122,Wohn- und Bürogebäude,1,1
+31001_1123,Wohn- und Geschäftsgebäude,1,1
+31001_1130,Wohngebäude mit Gewerbe und Industrie,1,1
+31001_1131,Wohn- und Betriebsgebäude,1,1
+31001_1210,Land- und forstwirtschaftliches Wohngebäude,1,1
+31001_1220,Land- und forstwirtschaftliches Wohn- und Betriebsgebäude,1,1
+31001_1221,Bauernhaus,1,1
+31001_1222,Wohn- und Wirtschaftsgebäude,1,1
+31001_1223,Forsthaus,1,1
+31001_1310,Gebäude zur Freizeitgestaltung,0,1
+31001_1311,Ferienhaus,0,0
+31001_1312,Wochenendhaus,0,0
+31001_1313,Gartenhaus,0,0
+31001_2000,Gebäude für Wirtschaft oder Gewerbe,0,1
+31001_2010,Gebäude für Handel und Dienstleistungen,0,1
+31001_2020,Bürogebäude,0,1
+31001_2030,Kreditinstitut,0,1
+31001_2040,Versicherung,0,1
+31001_2050,Geschäftsgebäude,0,1
+31001_2051,Kaufhaus,0,1
+31001_2052,Einkaufszentrum,0,1
+31001_2053,Markthalle,0,1
+31001_2054,Laden,0,1
+31001_2055,Kiosk,0,1
+31001_2056,Apotheke,0,1
+31001_2060,Messehalle,0,0
+31001_2070,Gebäude für Beherbergung,0,1
+31001_2071,"Hotel, Motel, Pension",0,1
+31001_2072,Jugendherberge,0,1
+31001_2073,Hütte (mit Übernachtungsmöglichkeit),0,0
+31001_2074,Campingplatzgebäude,0,1
+31001_2080,Gebäude für Bewirtung,0,1
+31001_2081,"Gaststätte, Restaurant",0,1
+31001_2082,Hütte (ohne Übernachtungsmöglichkeit),0,0
+31001_2083,Kantine,0,1
+31001_2090,Freizeit- und Vergnügungsstätte,0,1
+31001_2091,Festsaal,0,1
+31001_2092,Kino,0,1
+31001_2093,"Kegel-, Bowlinghalle",0,1
+31001_2094,Spielkasino,0,1
+31001_2100,Gebäude für Gewerbe und Industrie,0,1
+31001_2110,Produktionsgebäude,0,0
+31001_2111,Fabrik,0,0
+31001_2112,Betriebsgebäude,0,1
+31001_2113,Brauerei,0,1
+31001_2114,Brennerei,0,1
+31001_2120,Werkstatt,0,0
+31001_2121,Sägewerk,0,0
+31001_2130,Tankstelle,0,1
+31001_2131,"Waschstraße, Waschanlage, Waschhalle",0,1
+31001_2140,Gebäude für Vorratshaltung,0,0
+31001_2141,Kühlhaus,0,0
+31001_2142,Speichergebäude,0,0
+31001_2143,"Lagerhalle, Lagerschuppen, Lagerhaus",0,0
+31001_2150,Speditionsgebäude,0,0
+31001_2160,Gebäude für Forschungszwecke,0,1
+31001_2170,Gebäude für Grundstoffgewinnung,0,1
+31001_2171,Bergwerk,0,0
+31001_2172,Saline,0,0
+31001_2180,Gebäude für betriebliche Sozialeinrichtung,0,1
+31001_2200,Sonstiges Gebäude für Gewerbe und Industrie,0,1
+31001_2210,Mühle,0,0
+31001_2211,Windmühle,0,0
+31001_2212,Wassermühle,0,0
+31001_2213,Schöpfwerk,0,0
+31001_2220,Wetterstation,0,0
+31001_2310,Gebäude für Handel und Dienstleistung mit Wohnen,0,1
+31001_2320,Gebäude für Gewerbe und Industrie mit Wohnen,0,1
+31001_2400,Betriebsgebäude zu Verkehrsanlagen (allgemein),0,0
+31001_2410,Betriebsgebäude für Straßenverkehr,0,0
+31001_2411,Straßenmeisterei,0,0
+31001_2412,Wartehalle,0,0
+31001_2420,Betriebsgebäude für Schienenverkehr,0,0
+31001_2421,Bahnwärterhaus,0,0
+31001_2422,"Lokschuppen, Wagenhalle",0,0
+31001_2423,"Stellwerk, Blockstelle",0,0
+31001_2424,Betriebsgebäude des Güterbahnhofs,0,0
+31001_2430,Betriebsgebäude für Flugverkehr,0,0
+31001_2431,Flugzeughalle,0,0
+31001_2440,Betriebsgebäude für Schiffsverkehr,0,0
+31001_2441,Werft (Halle),0,0
+31001_2442,Dock (Halle),0,0
+31001_2443,Betriebsgebäude zur Schleuse,0,0
+31001_2444,Bootshaus,0,0
+31001_2450,Betriebsgebäude zur Seilbahn,0,0
+31001_2451,Spannwerk zur Drahtseilbahn,0,0
+31001_2460,Gebäude zum Parken,0,0
+31001_2461,Parkhaus,0,0
+31001_2462,Parkdeck,0,0
+31001_2463,Garage,0,0
+31001_2464,Fahrzeughalle,0,0
+31001_2500,Gebäude zur Versorgung,0,0
+31001_2501,Gebäude zur Energieversorgung,0,0
+31001_2510,Gebäude zur Wasserversorgung,0,0
+31001_2511,Wasserwerk,0,0
+31001_2512,Pumpstation,0,0
+31001_2513,Wasserbehälter,0,0
+31001_2520,Gebäude zur Elektrizitätsversorgung,0,0
+31001_2521,Elektrizitätswerk,0,0
+31001_2522,Umspannwerk,0,0
+31001_2523,Umformer,0,0
+31001_2527,Reaktorgebäude,0,0
+31001_2528,Turbinenhaus,0,0
+31001_2529,Kesselhaus,0,0
+31001_2540,Gebäude für Fernmeldewesen,0,0
+31001_2560,Gebäude an unterirdischen Leitungen,0,0
+31001_2570,Gebäude zur Gasversorgung,0,0
+31001_2571,Gaswerk,0,0
+31001_2580,Heizwerk,0,0
+31001_2590,Gebäude zur Versorgungsanlage,0,0
+31001_2591,Pumpwerk (nicht für Wasserversorgung),0,0
+31001_2600,Gebäude zur Entsorgung,0,0
+31001_2610,Gebäude zur Abwasserbeseitigung,0,0
+31001_2611,Gebäude der Kläranlage,0,0
+31001_2612,Toilette,0,0
+31001_2620,Gebäude zur Abfallbehandlung,0,0
+31001_2621,Müllbunker,0,0
+31001_2622,Gebäude zur Müllverbrennung,0,0
+31001_2623,Gebäude der Abfalldeponie,0,0
+31001_2700,Gebäude für Land- und Forstwirtschaft,0,0
+31001_2720,Land- und forstwirtschaftliches Betriebsgebäude,0,0
+31001_2721,Scheune,0,0
+31001_2723,Schuppen,0,0
+31001_2724,Stall,0,0
+31001_2726,Scheune und Stall,0,0
+31001_2727,Stall für Tiergroßhaltung,0,0
+31001_2728,Reithalle,0,0
+31001_2729,Wirtschaftsgebäude,0,1
+31001_2732,Almhütte,0,0
+31001_2735,"Jagdhaus, Jagdhütte",0,0
+31001_2740,"Treibhaus, Gewächshaus",0,0
+31001_2741,Treibhaus,0,0
+31001_2742,"Gewächshaus, verschiebbar",0,0
+31001_3000,Gebäude für öffentliche Zwecke,0,1
+31001_3010,Verwaltungsgebäude,0,1
+31001_3011,Parlament,0,1
+31001_3012,Rathaus,0,1
+31001_3013,Post,0,1
+31001_3014,Zollamt,0,1
+31001_3015,Gericht,0,1
+31001_3016,"Botschaft, Konsulat",0,1
+31001_3017,Kreisverwaltung,0,1
+31001_3018,Bezirksregierung,0,1
+31001_3019,Finanzamt,0,1
+31001_3020,Gebäude für Bildung und Forschung,0,1
+31001_3021,Allgemein bildende Schule,0,1
+31001_3022,Berufsbildende Schule,0,1
+31001_3023,"Hochschulgebäude (Fachhochschule, Universität)",0,1
+31001_3024,Forschungsinstitut,0,1
+31001_3030,Gebäude für kulturelle Zwecke,0,1
+31001_3031,Schloss,0,0
+31001_3032,"Theater, Oper",0,1
+31001_3033,Konzertgebäude,0,1
+31001_3034,Museum,0,1
+31001_3035,"Rundfunk, Fernsehen",0,1
+31001_3036,Veranstaltungsgebäude,0,1
+31001_3037,"Bibliothek, Bücherei",0,1
+31001_3038,"Burg, Festung",0,0
+31001_3040,Gebäude für religiöse Zwecke,0,1
+31001_3041,Kirche,0,1
+31001_3042,Synagoge,0,1
+31001_3043,Kapelle,0,1
+31001_3044,Gemeindehaus,0,1
+31001_3045,Gotteshaus,0,1
+31001_3046,Moschee,0,1
+31001_3047,Tempel,0,1
+31001_3048,Kloster,0,1
+31001_3050,Gebäude für Gesundheitswesen,0,1
+31001_3051,Krankenhaus,0,1
+31001_3052,"Heilanstalt, Pflegeanstalt, Pflegestation",0,1
+31001_3053,"Ärztehaus, Poliklinik",0,1
+31001_3060,Gebäude für soziale Zwecke,0,1
+31001_3061,Jugendfreizeitheim,0,1
+31001_3062,"Freizeit-, Vereinsheim, Dorfgemeinschafts-, Bürgerhaus",0,1
+31001_3063,Seniorenfreizeitstätte,0,1
+31001_3064,Obdachlosenheim,0,1
+31001_3065,"Kinderkrippe, Kindergarten, Kindertagesstätte",0,1
+31001_3066,Asylbewerberheim,0,1
+31001_3070,Gebäude für Sicherheit und Ordnung,0,1
+31001_3071,Polizei,0,1
+31001_3072,Feuerwehr,0,1
+31001_3073,Kaserne,0,1
+31001_3074,Schutzbunker,0,0
+31001_3075,Justizvollzugsanstalt,0,1
+31001_3080,Friedhofsgebäude,0,1
+31001_3081,Trauerhalle,0,1
+31001_3082,Krematorium,0,1
+31001_3090,Empfangsgebäude,0,1
+31001_3091,Bahnhofsgebäude,0,1
+31001_3092,Flughafengebäude,0,1
+31001_3094,Gebäude zum U-Bahnhof,0,1
+31001_3095,Gebäude zum S-Bahnhof,0,1
+31001_3097,Gebäude zum Busbahnhof,0,1
+31001_3098,Empfangsgebäude Schifffahrt,0,1
+31001_3100,Gebäude für öffentliche Zwecke mit Wohnen,0,1
+31001_3200,Gebäude für Erholungszwecke,0,1
+31001_3210,Gebäude für Sportzwecke,0,0
+31001_3211,"Sport-, Turnhalle",0,0
+31001_3212,Gebäude zum Sportplatz,0,0
+31001_3220,Badegebäude,0,1
+31001_3221,Hallenbad,0,1
+31001_3222,Gebäude im Freibad,0,1
+31001_3230,Gebäude im Stadion,0,1
+31001_3240,Gebäude für Kurbetrieb,0,1
+31001_3241,Badegebäude für medizinische Zwecke,0,1
+31001_3242,Sanatorium,0,1
+31001_3260,Gebäude im Zoo,0,1
+31001_3261,Empfangsgebäude des Zoos,0,1
+31001_3262,"Aquarium, Terrarium, Voliere",0,0
+31001_3263,Tierschauhaus,0,0
+31001_3264,Stall im Zoo,0,0
+31001_3270,Gebäude im botanischen Garten,0,1
+31001_3271,Empfangsgebäude des botanischen Gartens,0,1
+31001_3272,Gewächshaus (Botanik),0,0
+31001_3273,Pflanzenschauhaus,0,0
+31001_3280,Gebäude für andere Erholungseinrichtung,0,1
+31001_3281,Schutzhütte,0,0
+31001_3290,Touristisches Informationszentrum,0,1
+31001_9998,Nach Quellenlage nicht zu spezifizieren,0,0
+51001_1001,Wasserturm,0,0
+51001_1002,Kirchturm,0,0
+51001_1003,Aussichtsturm,0,0
+51001_1004,Kontrollturm,0,0
+51001_1005,Kühlturm,0,0
+51001_1006,Leuchtturm,0,0
+51001_1007,Feuerwachturm,0,0
+51001_1008,"Sende-,Funkturm",0,0
+51001_1009,"Stadt-,Torturm",0,0
+51001_1010,Förderturm,0,0
+51001_1011,Bohrturm,0,0
+51001_1012,"Schloss-, Burgturm",0,0
+51001_9998,Nach Quellenlage nicht zu spezifizieren,0,0
+51001_9999,Sonstiges,0,0
+51002_1215,Biogasanlage,0,0
+51002_1220,Windrad,0,0
+51002_1230,Solarzellen,0,0
+51002_1250,Mast,0,0
+51002_1251,Freileitungsmast,0,0
+51002_1260,Funkmast,0,0
+51002_1280,Radioteleskop,0,0
+51002_1290,Schornstein,0,0
+51002_1330,Kran,0,0
+51002_1331,Drehkran,0,0
+51002_1332,Portalkran,0,0
+51002_1333,Laufkran,0,0
+51002_1340,Trockendock,0,0
+51002_1350,Hochofen,0,0
+51002_1400,Umformer,0,0
+51002_9999,Sonstiges,0,0
+51003_1201,Silo,0,0
+51003_1205,Tank,0,0
+51003_1206,Gasometer,0,0
+51003_9999,Sonstiges,0,0
+51006_1430,Zuschauertribüne,0,0
+51006_1431,"Zuschauertribüne, überdacht",0,0
+51006_1432,"Zuschauertribüne, nicht überdacht",0,0
+51006_1440,Stadion,0,0
+51006_1470,Sprungschanze (Anlauf),0,0
+51006_1490,Gradierwerk,0,0
+51006_9999,Sonstiges,0,0
+51007_1100,Historische Wasserleitung,0,0
+51007_1110,Aquaedukt,0,0
+51007_1210,Wachturm,0,0
+51007_1400,Befestigung (Burgruine),0,0
+51007_1410,Burg,0,0
+51007_1500,Historische Mauer,0,0
+51007_1510,Stadtmauer,0,0
+51007_1520,Sonstige historische Mauer,0,0
+51007_9999,Sonstiges,0,0
+51009_1610,Überdachung,0,0
+51009_1611,Carport,0,0
+51009_1700,Mauer,0,0
+51009_1750,Denkmal,0,0
+51009_9999,Sonstiges,0,0
+52003_1010,Schiffshebewerk,0,0
+52003_1020,Kammerschleuse,0,0
+53001_1800,Brücke,0,0
+53001_1806,Drehbrücke,0,0
+53001_1807,Hebebrücke,0,0
+53001_1808,Zugbrücke,0,0
+53001_1830,"Hochbahn, Hochstraße",0,0
+53001_1880,"Schutzgalerie, Einhausung",0,0
+53001_1890,Schleusenkammer,0,0
+53009_2030,Staumauer,0,0
+53009_2050,Wehr,0,0
+53009_2060,Sicherheitstor,0,0
+53009_2070,Siel,0,0
+53009_2080,Sperrwerk,0,0
+53009_2090,Schöpfwerk,0,0
