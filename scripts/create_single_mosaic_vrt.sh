@@ -56,7 +56,6 @@ cd ../vrt
 gdalbuildvrt ./abk_all_sw.vrt ../sw_affine/*.tif
 cd ..
 
-# NOTE: DOESNT SEEM TO WORK FOR COLORED TILES!!!
 # do the same stuff with farbe tiles 
 # ----------------------------------
 cd ./farbe
