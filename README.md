@@ -28,7 +28,7 @@ Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deut
 - - - \<synthesis_dataset2\>
   
 # Verwendung des Tools
-0) Repo herunterladen (mindestens die main.py und /methods/function_list.py)
+0) Repo herunterladen (mindestens die main.py und /methods/function_list.py) (über die gui im Browser: \<\>code anklicken (oben rechts), download zip)
 1) Auswahl zu nutzender Daten (Selection of data to be used)
 - -\>in main.py unter SETTINGS, global settings, use_\<dataset\> = 1 setzen 
 2) Weitere Einstellungen für die Datenaufbereitung vornehmen
