@@ -1,0 +1,60 @@
+# DRAFT:
+# recommended folder structure with default names (without mark, see below
+# note: ° means the folder will be created automatically e.g. abk_farbe/°
+# note: °° means the file will be downloaded automatically
+# note: °°° means the file will be created automatically
+# folder structure                      variable name           description                                                 scope               note
+# ----------------                      -------------           -----------                                                 -----               ----
+# raw/
+# |--- abk_farbe/°                      fp_abk_farbe_dir        Amtliche Basis Karte (ABK), farbig                          NRW                 set fp
+#      |--- tile01.tif°°°                                           1km Kachel
+#      ...
+# |--- abk_sw/°                         fp_abk_sw_dir           Amtliche Basis Karte (ABK), schwarz-weiß                    NRW                 set fp
+#      |--- tile01.tif°°°
+#      ...
+# |--- dvg/                             fp_dvg_dir              Digitale Verwaltungsgrenzen (DVG)                           NRW                 set fp
+#      |--- dvg1gem_nw.shp                                          DVG von Gemeinden in NRW                                                    name file
+# |--- eenrw/                           fp_eenrw_dir            Energie-Erzeugungs-Anlagen Standorte NRW des LANUV          NRW
+#      |--- something.gdb/              fp_eenrw_gdb
+# |--- hu_alkis/                        fp_hu_dir_raw           Hausumringe ALKIS                                           Bund
+#      |--- hu_shp.shp                                              Hausumringe ALKIS als Shapefile
+# |--- osm.shp/                         fp_osm_dir_raw          OpenStreetMap (OSM)                                         global
+#      |--- osm_layer1.shp
+#      ...
+# |--- LINFOS/°                         fp_prot_nrw_dir         Schutzgebiete, Landschaftsinformationssammlung (LINFOS)     NRW
+#      |--- zips/°
+#           |--- linfos_zip1.zip°°°
+#           ...
+#      |--- shps/°
+#           |--- linfos_zip1/°
+#                |--- linfos_zip1_shp1.shp°°°
+#                ...
+#           ...
+# |--- rp/°                             fp_rp_dir               Regionalpläne (RP)                                          NRW
+#      |--- rp_tile01.tif°°°
+#      ...
+# |--- rwb/°                            fp_rwb_dir              Raumwärmebedarfs-Modell (RWB-Modell) des LANUV              NRW
+#      |--- zips/°
+#           |--- rwb_zip1.zip°°°
+#           ...
+#      |--- rwb_zip1/°
+#           |--- rwb_zip1.shp°°
+#      ...
+# |--- zensus/                                                  Zensus 2011                                                 bundesweit
+#      |--- wohn100m.csv                fp_zensus_csv_wohn100m_raw      Wohnungsdaten 100m Gitter
+#      |--- geb100m.csv                 fp_zensus_csv_geb100m_raw       Gebäudedaten 100m Gitter
+#      |--- pop100m.csv                 fp_zensus_csv_wohn100m_raw      Bevölkerungsdaten 100m Gitter
+
+
+# out/
+#  |--- abk_farbe/°°    fp_abk_farbe_dir_out
+#  |--- dvg/
+#  |--- eenrw/
+#  |--- hu_alkis/
+#  |--- osm/
+#  |--- prot_nrw/
+#  |--- rwb/
+#  |--- rp/
+#  |--- zensus/
+
+
