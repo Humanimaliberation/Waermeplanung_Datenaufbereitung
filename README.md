@@ -2,8 +2,8 @@
 Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deutschland, NRW) 
 
 # Aufbau des Tools
-In der main.py befindet sich der eigentliche Programmcode. 
-In /methods/function_list.py finden sich definierte Klassen und Funktionen. 
+- In der main.py befindet sich der eigentliche Programmcode. Hier werden auch alle Einstellungen vorgenommen.
+- In /methods/function_list.py finden sich definierte Klassen und Funktionen. 
 
 # Gliederung der main.py
 - Kommentarblock zur Beschreibung
