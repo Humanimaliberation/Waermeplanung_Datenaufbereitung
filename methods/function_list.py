@@ -109,34 +109,41 @@ def get_gridcell_id_from_point(point,size='100m'):
 
 #-----------------------------------------------------------------------------#
 
-def get_gdf_spatial_extent_epsg3035(gdf):
+def get_bbox_gdf_epsg3035(gdf, extra_space_x=0, extra_space_y=0):
     """
-    get spatial extents and return as gdf with rectangle as geometry
-    output gdf is in epsg:3035
-    :param gdf: geopandas gdf
-    :return: gdf_spatial_extent: geopandas gdf
+    get boundbox as geopandas geodataframe (epsg:3035),
+    with total bounds from input geodataframe as corners
+    extraspace can be added
+    :param gdf: geopandas geodataframe
+    :param extra_space_x: int, extra space in meters to add to x-axis on both sides
+    :param extra_space_y: int, extra space in meters to add to y-axis on both sides
+    :return: bbox_gdf: geopandas geodataframe (epsg:3035)
     """
     minx, miny, maxx, maxy = gdf.to_crs(epsg=3035).total_bounds
-    spatial_extent_epsg3035 = Polygon([(minx, miny), (minx, maxy), (maxx, maxy), (maxx, miny)])
-    print('spatial_extent_epsg3035.bounds=', spatial_extent_epsg3035.bounds)
-    gdf_spatial_extent = gpd.GeoDataFrame(index=[0], geometry=[spatial_extent_epsg3035])
-    gdf_spatial_extent.set_crs(epsg=3035, inplace=True)
-    return gdf_spatial_extent
+    minx = minx - extra_space_x
+    maxx = maxx + extra_space_x
+    miny = miny - extra_space_y
+    maxy = maxy + extra_space_y
+    bbox_epsg3035 = Polygon([(minx, miny), (minx, maxy), (maxx, maxy), (maxx, miny)])
+    print('bbox_epsg3035.bounds=', bbox_epsg3035.bounds)
+    bbox_gdf = gpd.GeoDataFrame(index=[0], geometry=[bbox_epsg3035])
+    bbox_gdf.set_crs(epsg=3035, inplace=True)
+    return bbox_gdf
 
 #-----------------------------------------------------------------------------#
 
-def  get_gdf_within_spatial_extent(gdf, gdf_spatial_extent):
+def cut_gdf_to_gdf_ref_geometry(gdf, gdf_ref):
     """
-    get gdf with all dvg within spatial extent
-    :param gdf_dvg_all: geopandas gdf, all dvg
-    :param gdf_spatial_extent: geopandas gdf, spatial extent
-    :return: gdf_dvg_within_spatial_extent: geopandas gdf
+    cut gdf to elements fully or partly within gdf_ref
+    :param gdf: geopandas gdf, to be cut
+    :param gdf_ref: geopandas gdf, to cut to
+    :return: gdf_cut: geopandas gdf
     """
-    gdf_orig_crs_as_epsg = gdf.crs.to_epsg()
-    gdf = gdf.to_crs(epsg=gdf_spatial_extent.crs.to_epsg()) # project to same crs
-    gdf_within_spatial_extent = gdf.sjoin(gdf_spatial_extent, how='inner', op='intersects')
-    gdf_within_spatial_extent = gdf_within_spatial_extent.to_crs(epsg=gdf_orig_crs_as_epsg) # project back to orig. crs
-    return gdf_within_spatial_extent
+    orig_epsg = gdf.crs.to_epsg()
+    gdf = gdf.to_crs(epsg=gdf_ref.crs.to_epsg()) # project to same crs as gdf_ref
+    gdf_cut = gdf.sjoin(gdf_ref, how='inner', op='intersects')
+    gdf_cut = gdf_cut.to_crs(epsg=orig_epsg) # project back to orig. crs
+    return gdf_cut
 
 #-----------------------------------------------------------------------------#
 
@@ -680,176 +687,6 @@ def print_progress_hu_merkmal_assignment(counter, n_hu_cells, start_time):
 ###############################################################################
 ################################# OLD METHODS #################################
 ###############################################################################
-
-def add_geometry_to_df_eenrw_excel_abw_epsg4326(df_dict_eenrw_excel,key_abw,df_gvisys,gvisys_col_plz,gvisys_col_lon,gvisys_col_lat):
-    """
-    add geometry as points to df_eenrw_excel_abw in epsg:4326
-    uses different approaches to get coordinates from plz or ort
-    a) pgeocode with plz                (epsg:4326)
-    b) df_gvisys with plz (own method)  (epsg:4326) (not needed)
-    c) geopy with plz                   (epsg:4326)
-    d) df_gvisys with ort (own method)  (epsg:4326) (not needed)
-    default geometry is Point(0,0)      (epsg:4326)
-
-    Note: #TODO remove b) and d) and gvisys related parameters
-                to reduce dependencies or keep as backup
-
-    :param df_dict_eenrw_excel: dict, from read_excel_eenrw()
-    :param key_abw: str, key of df_dict_eenrw_excel to access df
-    :param df_gvisys: pandas dataframe, from GV-ISys
-    :param gvisys_col_plz: str, column number of plz in df_gvisys
-    :param gvisys_col_lon: str, column number of lon in df_gvisys
-    :param gvisys_col_lat: str, column number of lat in df_gvisys
-    :return: df_eenrw_excel_abw['geometry']: pandas dataframe
-    """
-    # DEBUGGING NOTE: show columns['Plz','Ort','geometry'] of df_dict_eenrw_excel[key_abw] for specific plz with
-    # df_dict_eenrw_excel[key_abw][df_dict_eenrw_excel[key_abw]['Plz'] == plz][['Plz','Ort','geometry']]
-    df = df_dict_eenrw_excel[key_abw]
-    df['geometry'] = Point(0, 0)    # default geometry is Point(0,0)
-    lon, lat = np.nan, np.nan
-    counter = -1                                    # for user feedback (progress)
-    counter_pgeocode = 0                            # for user feedback (analysis) method a)
-    counter_df_gvisys_plz = 0                       # for user feedback (analysis) method b)
-    counter_geopy = 0                               # for user feedback (analysis) method c)
-    counter_df_gvisys_ort = 0                       # for user feedback (analysis) method d)
-    counter_no_coordinates = 0                      # for user feedback (analysis) no coordinates found
-    geolocator = Nominatim(user_agent="my_request")
-    pgeocode_postal_codes = list(pgeocode.Nominatim('de')._index_postal_codes()['postal_code'])  # strings
-
-    # get coordinates of orts-mittelpunkte from plz or ort
-    print('\tstart assigning coordinates of orts-mittelpunkte from plz for '+ str(len(df)) + ' entries in df')
-    for plz in list(df['Plz'].unique()):
-        counter += 1
-        if counter % 100 == 0:
-            print('\t\tcounter: ' + str(counter) + ' of ' + str(len(list(df['Plz'].unique())))+' unique PLZ in df used to assign coordinates to geometry')
-
-        orte = df[df['Plz'] == plz]['Ort'].values
-        orte = list(set(orte))  # remove duplicates
-        ort = orte[0]  # first entry
-
-        # method a) get coordinates from plz with pgeocode (wgs84, epsg:4326) if plz is in __index_postal_codes()
-        if str(plz) in pgeocode_postal_codes:
-            lon, lat = pgeocode.Nominatim('de').query_postal_code(plz)[['longitude', 'latitude']] # numpy.float64 or NaN
-            counter_pgeocode += 1
-            #print('\t\tplz = '+str(plz)+' used method a) pgeocode, orte = '+str(orte)) # works well&fast, too much stout
-
-        # method b) try own method with plz and coordinates from gvisys
-        if lon is np.nan or lat is np.nan:
-            # exctract from gvisys dataframe with current plz
-            df_gvisys = df_gvisys.loc[df_gvisys[gvisys_col_plz] == plz]
-            lon, lat = _get_lon_lat_from_plz(plz, df_gvisys, gvisys_col_plz, gvisys_col_lon, gvisys_col_lat)  # string
-            if lon is not np.nan and lat is not np.nan:
-                counter_df_gvisys_plz += 1
-                #print('\t\tplz = ' + str(plz) + ' used method b) gvisys (plz), orte = ' + str(orte)) # debugging
-
-        # method c) second try to get coordinates from ort with geopy (wgs84, epsg:4326) # slow
-        if lat is np.nan or lon is np.nan:
-            lon, lat = geolocator.geocode(plz).longitude, geolocator.geocode(plz).latitude  # float64
-            counter_geopy += 1
-            #print('\t\tplz = ' + str(plz) + ' used method c) geopy (plz), orte = ' + str(orte)) # debugging
-
-        # method d) own method with ort and coordinates from gvisys, problem are citys like hagen
-        if lon is np.nan or lat is np.nan:
-            lon, lat = _get_lon_lat_from_ort(ort, df_gvisys, gvisys_col_ort, gvisys_col_lon, gvisys_col_lat)
-            counter_df_gvisys_ort += 1
-            #print('plz = ' + str(plz) + ' used method d) gvisys (ort), orte = ' + str(orte)) # debugging
-
-        # convert to float (own methods return string with german decimal seperator)
-        if lon is not np.nan and type(lon) is str:
-            lon = float(lon.replace(',', '.'))
-        if lat is not np.nan and type(lat) is str:
-            lat = float(lat.replace(',', '.'))
-
-        # error message if no coordinates where found (skip row and keep default geometry value)
-        if lat is np.nan or lon is np.nan:
-            print('\tno coordinates found for plz ' + str(plz) + ' and ort ' + str(ort))
-            counter_no_coordinates += 1
-            continue
-
-        # assign Points (epsg:4326) to dataframe
-        Point4326 = Point(float(lon), float(lat))
-        row_indexer = df.loc[df['Plz'] == plz].index.to_list()
-        col_indexer = df.loc[df['Plz'] == plz].columns.get_loc('geometry')
-        df.iloc[row_indexer, col_indexer] = Point4326
-
-        # assign default values to lon and lat for next iteration
-        lon, lat = np.nan, np.nan
-
-    print('\tNumber of PLZ for which coordinates where derived by:')
-    print('\t\tmethod a) (pgeocode plz): ' + str(counter_pgeocode))
-    print('\t\tmethod b) (gvisys plz): ' + str(counter_df_gvisys_plz))
-    print('\t\tmethod c) (geopy plz): ' + str(counter_geopy))
-    print('\t\tmethod d) (gvisys ort): ' + str(counter_df_gvisys_ort))
-    print('\tNumber of PLZ for which no coordinates where found: ' + str(counter_no_coordinates))
-
-    return df['geometry']
-
-#-----------------------------------------------------------------------------#
-
-def _get_lon_lat_from_plz(plz, df_gvisys, gvisys_col_plz, gvisys_col_lon, gvisys_col_lat):
-    # DEPRECATED
-    # never used, plz which dont work with pgeocode are not in df_gvisys
-    # gv-isys uses (wgs84, epsg:4326)
-    lon, lat = np.nan, np.nan
-    # if df_gvisys has entries for plz get coordinates (all entries with plz have coordinates)
-    if plz in list(df_gvisys.iloc[:, gvisys_col_plz]):
-        # if plz has multiple entries in gvisys, use first entry
-        lon = df_gvisys[df_gvisys.iloc[:, gvisys_col_plz] == plz][gvisys_col_lon].values[0]  # as string
-        lat = df_gvisys[df_gvisys.iloc[:, gvisys_col_plz] == plz][gvisys_col_lat].values[0]  # as string
-    return lon, lat
-
-#-----------------------------------------------------------------------------#
-
-def _get_lon_lat_from_ort_equal(ort, df_gvisys, gvisys_col_gem, gvisys_col_lon, gvisys_col_lat):
-    # check if df_gvisys has entries whose gemeindenamen matches ort (equal!) (Groß-/Kleinschreibung beachtet)
-    lon, lat = np.nan, np.nan
-    df = df_gvisys.loc[df_gvisys.iloc[:, gvisys_col_gem] == ort]
-    if len(df) > 0:
-        lon_list = list(df[gvisys_col_lon].values)
-        lat_list = list(df[gvisys_col_lat].values)
-        for lon in lon_list:
-            if lon is not np.nan:
-                lon = lon
-                break
-        for lat in lat_list:
-            if lat is not np.nan:
-                lat = lat
-    return lon, lat
-
-def _get_lon_lat_from_ort(ort, df_gvisys, gvisys_col_gem, gvisys_col_lon, gvisys_col_lat):
-    # DEPRECATED
-    # never used, all plz which dont work with pgeocode worked with geopy
-    # gv-isys uses (wgs84, epsg:4326)
-
-    # check if df_gvisys has entries whose gemeindenamen matches ort (equal!) (Groß-/Kleinschreibung beachtet)
-    lon, lat = _get_lon_lat_from_ort_equal(ort, df_gvisys, gvisys_col_gem, gvisys_col_lon, gvisys_col_lat)
-    # try out other variants of ortsname
-    if lon is np.nan or lat is np.nan:
-        lon, lat = _get_lon_lat_from_ort_equal(ort+', Stadt', df_gvisys, gvisys_col_gem, gvisys_col_lon, gvisys_col_lat)
-    if lon is np.nan or lat is np.nan:
-        lon, lat = _get_lon_lat_from_ort_equal(ort+', Hansestadt', df_gvisys, gvisys_col_gem, gvisys_col_lon, gvisys_col_lat)
-
-    # if coordinates where found, return them
-    if lon is not np.nan and lat is not np.nan:
-        return lon, lat
-    # otherwise, try to find coordinates by searching gemeindenamen which contain ort (Groß-/Kleinschreibung beachtet)
-    # WARNING!!! PRONE TO ERRORS, e.g. ort = 'Hagen' matches 'Hagenburg', 'Hagenbach', 'Hagenbünach', 'Hagenow' in NRW
-    df = df_gvisys.loc[df_gvisys.iloc[:, gvisys_col_gem].str.contains(ort) == True]
-    # df_gvisys.loc[df_gvisys.iloc[:, gvisys_col_gem].str.contains('Hagen') == True][[gvisys_col_gem,gvisys_col_plz,gvisys_col_lon]]
-    # check for entries whose coordinates are not NaN and use the first one
-    if len(df) > 0:
-        lon_list = list(df[gvisys_col_lon].values)
-        lat_list = list(df[gvisys_col_lat].values)
-        for lon in lon_list:
-            if lon is not np.nan:
-                lon = lon
-                break
-        for lat in lat_list:
-            if lat is not np.nan:
-                lat = lat
-    return lon, lat
-
-#-----------------------------------------------------------------------------#
 
 def convert_cellname_to_wkt_str(cellname):
     # note cell coordinates in meter
