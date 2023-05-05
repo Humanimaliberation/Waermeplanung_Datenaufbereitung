@@ -3,7 +3,7 @@
 """
 Created on Fri Feb 17 13:06:34 2023
 
-@author: gustav
+@author: Matthias Markus Werle
 """
 # TODO move this comment to """ """ part above, add licence and description
 # program structure
@@ -38,20 +38,21 @@ Created on Fri Feb 17 13:06:34 2023
 ###############################################################################
 ################################# IMPORTS #####################################
 ###############################################################################
-# import libraries
-# ----------------
-import geopandas as gpd
-import pandas as pd
-from shapely.geometry import Point, Polygon
-from shapely import wkt
-import matplotlib.pyplot as plt
-import os       # for os.path.abspath()
-import sys      # for sys.path.append() and sys.exit()
-import fiona    # for fiona.open() otherwise included in geopandas
-import time     # to measure execution time
-import wget     # to download files from web
-import zipfile  # to unzip files
-import subprocess # used to duplicate stdout into logfile (together with os and sys), not working yet
+# tested python kernel v. 3.8.10 with Ubuntu 20.04.6 LTS (Focal Fossa) from IDE Pycharm Community Edition 2023.03.02
+
+# import libraries                              # tested versions   # use case
+# ----------------                              # ----------------  # --------
+import geopandas as gpd                         # v. 0.12.2         # for geodataframes
+import pandas as pd                             # v. 1.5.3          # for dataframes
+from shapely.geometry import Point, Polygon     # v. 2.0.1 # for geometry
+import os                                       # built-in          # for paths, working directory and file handling
+import sys                                      # built-in          # for sys.path.append() and sys.exit() (e.g.)
+import fiona                                    # v. 1.9.1          # for fiona.open() otherwise included in geopandas
+import time                                     # built-in          # to measure execution time
+import wget                                     # v. 3.2            # to download files from web
+import zipfile                                  # built-in          # to unzip files
+import subprocess                               # built-in          # used to call cli-tools e.g. batch file execution
+#import matplotlib.pyplot as plt                # not used          # for plotting (doesn't work in Pycharm CE)
 
 # import own library
 # ------------------
@@ -62,8 +63,7 @@ from function_list import *                                    # import all defi
 
 # optional imports
 # ----------------
-import warnings
-# ignore warnings e.g. pandas.dataframe.append() deprecated
+import warnings                                 # built-in          # to ignore warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)  # ignore FutureWarning: pd.append() is deprecated, use pd.concat() instead during call of df.append() during call of zensus._create_empty_dataframe_with_new_columns()
 warnings.simplefilter(action='ignore', category=UserWarning)    # ignore UserWaring: Column names longer than 10 characters will be truncated when saved to ESRI Shapefile. during call of gdf.to_file()
 
@@ -77,21 +77,20 @@ start_time_total = time.time()  # start timer for total execution time
 ###############################################################################
 # set global settings which datasets to use (also useable for navigating to code sections)
 # 1 = use, 0 = don't use
-use_gvisys = 0          # use GV-ISys' list of all politicaly independent municipalities, hardly used
-use_dvg = 1             # use Digitale Verwaltungsgrenzen (DVG) data, used to crop all other raw datasets
-use_abk_farbe = 0       # use Amtliche Basiskarte NRW data, farbig
-use_abk_sw = 0          # use Amtliche Basiskarte NRW data, schwarz-weiß
-use_rp = 0              # use Regionalpläne NRW data (for testing)
-use_osm = 0             # use OpenStreetMap data
-use_hu = 0              # use Hausumringe data (ALKIS) # needs 1 min to load already cropped data for 500.000 hu
-use_rwb = 0             # use Raumwärmebedarfsmodelle LANUV
-use_zensus_geb = 0      # use Zensus2011 data for Gebäude
-use_zensus_wohn = 0     # use Zensus2011 data for Wohnungen
-use_zensus_pop = 1      # use Zensus2011 data for Einwohner*innen-Zahlen je Gitterzelle
-use_ee_nrw = 0          # use Energie-Erzeugung NRW (Standorte Strom, Wärme), needs use_gvisys = 1 at the moment
-use_prot_nrw = 1        # use Schutzgebiete NRW data (e.g. FFH-Gebiete, Vogel-, Wasser-, Natur-, Landschaftsschutzgebiete)
-
-use_subareas = 0        # use sub-areas e.g. Baubloecke in Wuppertal, demo
+use_dvg = 1             # use Digitale Verwaltungsgrenzen (DVG) data, used to crop all other raw datasets!!!            # germany-wide
+use_abk_farbe = 0       # use Amtliche Basiskarte NRW data, farbig                                                      # NRW-wide
+use_abk_sw = 1          # use Amtliche Basiskarte NRW data, schwarz-weiß                                                # NRW-wide
+use_rp = 0              # use Regionalpläne NRW data (for testing)                                                      # NRW-wide
+use_osm = 0             # use OpenStreetMap data                                                                        # globally
+use_hu = 0              # use Hausumringe data (ALKIS) # needs 1 min to load already cropped data for 500.000 hu        # germany-wide
+use_rwb = 0             # use Raumwärmebedarfsmodelle LANUV                                                             # NRW-wide
+use_zensus_geb = 0      # use Zensus2011 data for Gebäude                                                               # germany-wide
+use_zensus_wohn = 0     # use Zensus2011 data for Wohnungen                                                             # germany-wide
+use_zensus_pop = 0      # use Zensus2011 data for Einwohner*innen-Zahlen je Gitterzelle                                 # germany-wide
+use_ee_nrw = 0          # use Energie-Erzeugung NRW (Standorte Strom, Wärme)                                            # NRW-wide
+use_prot_nrw = 0        # use Schutzgebiete NRW data from LINFOS (Landschaftsinformationssammlung)                      # NRW-wide
+# demo only: if other subareas should be used, edit code in PART TWO: POSTPROCESSING of main routine
+use_subareas = 0        # use sub-areas e.g. Baubloecke in Wuppertal (demo)                                             # generally applicable
 
 # set global settiongs which actions to perform
 # 1 = perform, 0 = don't perform
@@ -105,8 +104,7 @@ perform_pre_analysis_zensus_data = 1    # perform pre-analysis of zensus data (d
 perform_pre_analysis_hu_gfk = 1         # get statistics to number of hu per gfk code (doesn't take long)
 perform_pre_analysis_hu_merk = 1        # get statistics to number of hu per gfk code per merkmal (1 min extra)
 perform_pre_analysis_hu_merk_detailed = 0 # also get statitics to number of hu per gfk code per merkmalsauspraegung (11 min!)
-perform_stdout_duplication = 0          # duplicate stdout to logfile (does not work yet), testing only
-
+perform_stdout_duplication = 0          # duplicate stdout to logfile #todo WIP, not working yet, experimental
 
 # Global variables
 # ----------------
@@ -115,7 +113,8 @@ perform_stdout_duplication = 0          # duplicate stdout to logfile (does not 
 gem_list_selected = ['Wuppertal','Solingen','Velbert']                                                                  # SET ME (this ones more readable though)
 
 # Zensus:
-# gridsize of zensus data, allowed values: '100m', '1km', '10km', '100km'
+# gridsize of zensus data, allowed values: '100m', '1km', '10km', '100km'; recommended: '100m'
+# note: MUST MATCH gridsize of downloaded zensusdata! (fp_zensus_geb, fp_zensus_wohn, fp_zensus_pop)
 INSPIRE_size = '100m'                                                                                                   # SET ME, optionally
 # threshold for quality of zensus data which should be used during remapping, allowed values: 0, 1, 2 (0 = best, 2 = worst)
 zensus_q_threshold = 0
@@ -128,16 +127,15 @@ zensus_m_filter_wohn = ['INSGESAMT','BAUJAHR_MZ','HEIZTYP','NUTZUNG_DETAIL_HHGEN
 eenrw_layer_whitelist = ['Standorte', 'Großspeicher', 'Grünstrom_Tankstellen', 'Elektro_Tankstellen_gesamt']            # SET ME
 eenrw_layer_blacklist = ['NRW', 'RegBez', 'Planungsreg', 'PlanungsReg', 'Kreise','RheinRevier']  # redundant in this case # SET ME
 
-# General:
-kenn = '' # marker for output files, e.g. kenn = 'test_' will result in output files like 'test_<something>'            # SET ME
-# TODO: implement variable kenn into all write functions and also into all read functions for not raw data
-# TODO: also change directory structure, one dir for all input data, one dir for all output data, one dir for all analysis data
 
 #-----------------------------------------------------------------------------#
 #-------------------------- FILE PATHS - AND - URLs --------------------------#
 #-----------------------------------------------------------------------------#
 # set file paths to shape files or csv files for ...
 # TODO: move fp with processed data to main routine, only leve settable fp here
+# TODO: move URLS probably to end of this section, first settable filepaths, than URLs
+
+# TODO: change directory structure, one dir for all input data, one dir for all output data, one dir for all analysis data
 
 # LOGGING
 # -------
@@ -148,14 +146,6 @@ fp_log_dir = '/media/gustav/Data/Sciebo/Thesis/thesisdata/log/'                 
 # URLs for QGIS QML styles
 # ------------------------
 url_repo_qml_osm = 'https://raw.githubusercontent.com/Humanimaliberation/Waermeplanung_Datenaufbereitung/main/qml_styles/osm/'
-
-# GV-ISys
-# -------
-# Alle politisch selbstständigen politischen Gemeinden in NRW (10.000+)
-# Quelle: GV-ISys (BKG), Stand Jan. 2022
-# Vorher bereits von xlsx nach csv konvertiert #todo implement type-check, opt. download, opt. conversion xlsx to csv, barely used
-# only relevant if use_gvisys = 1
-fp_csv_gem_list = '/media/gustav/Data/thesisdata/destatis_GV-ISys/Alle_politisch_selbstständigen_Gemeinden_31.12.2022/csv/Onlineprodukt_Gemeinden.csv'  # SET ME
 
 # Digitale Verwaltungsgrenzen NRW
 # -------------------------------
@@ -169,6 +159,7 @@ fp_dvg_dir_out = '/media/gustav/Data/thesisdata/opengeodata.nrw/Digitale_Verwalt
 # only relevant if use_abk_farbe = 1 or use_abk_sw = 1
 fp_abk_pardir = '/media/gustav/Data/Sciebo/Thesis/thesisdata/opengeodata.nrw/abk/'                                      # SET ME (will create subfolders farbe/ and/or sw/)
 url_abk_pardir = 'https://www.opengeodata.nrw.de/produkte/geobasis/lk/akt/abk_tiff/'                                    # for downloading (contains subfolders abk_farbe_tiff and abk_sw_tiff)
+url_abk_bash_script = 'https://raw.githubusercontent.com/Humanimaliberation/Waermeplanung_Datenaufbereitung/main/scripts/create_single_mosaic_vrt.sh' # for downloading
 
 # Regionalpläne NRW
 # -----------------
@@ -192,13 +183,12 @@ fp_hu_dir_raw = '/media/gustav/Data/thesisdata/opengeodata.nrw/hu_EPSG4647_Shape
 fp_hu_dir_out = '/media/gustav/Data/thesisdata/opengeodata.nrw/hu_EPSG4647_Shape_out/'                                  # SET ME for reading and writing
 url_hu_gfk = 'https://repository.gdi-de.org/schemas/adv/citygml/Codelisten/BuildingFunctionTypeAdV.xml'                 # for downloading, not used anymore
 url_hu_gfk_mod = 'https://raw.githubusercontent.com/Humanimaliberation/Waermeplanung_Datenaufbereitung/main/lut/BuildingFunctionTypeAdV_mod.csv'
-fp_hu_age_analysis_csv = '/media/gustav/Data/thesisdata/opengeodata.nrw/hu_EPSG4647_Shape_out/hu_age_analysis_q'+str(zensus_q_threshold)+'.csv' # SET ME for writing
 
 # Raumwärmebedarfsmodelle (RWB) LANUV
 # -----------------------------------
 # only relevant if use_rwb = 1
 fp_rwb_dir = '/media/gustav/Data/thesisdata/opengeodata.nrw/Raumwärmebedarfsmodell_NRW/'                                # SET ME
-url_rwb_dir = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/klima/raumwaermebedarfsmodell/'                     # for downloading folders for each AGS (Gemeinde) within spatial extent of gem_list_selected
+url_rwb_dir = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/klima/raumwaermebedarfsmodell/'                     # for downloading folders for each AGS (Gemeinde) within bound box of gem_list_selected
 
 # Zensus2011 Daten
 # ----------------
@@ -214,7 +204,7 @@ fp_zensus_dir_out = '/media/gustav/Data/thesisdata/zensus2011/out/'             
 # Standorte von Strom- und Wärmeerzeugungsanlagen in NRW
 # only relevant if use_ee_nrw = 1
 fp_eenrw_dir = '/media/gustav/Data/thesisdata/opengeodata.nrw/NRW_Standorte_Strom_Waerme/'                              # SET ME
-fp_eenrw_gdb = os.path.join(fp_eenrw_dir,'FIS_Datenbank_Energie_OpenData_9.x.gdb/')
+fp_eenrw_gdb = os.path.join(fp_eenrw_dir,'FIS_Datenbank_Energie_OpenData_9.x.gdb/')                                     # download file first!
 fp_eenrw_crop = os.path.join(fp_eenrw_dir,'FIS_Datenbank_Energie_OpenData_9.x_crop/')                                   # SET ME (optional will be created)
 fp_eenrw_standorte_xlsx = os.path.join(fp_eenrw_dir,'Standorte_Strom_und_Waerme_StandEnde2021_v2.xlsx')
 url_eenrw_gdb = ''
@@ -224,19 +214,32 @@ url_eenrw_standorte_xlsx_zip = 'https://www.opengeodata.nrw.de/produkte/umwelt_k
 # --------------------------
 # source: https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/
 # only relevant if use_prot_nrw = 1
-fp_prot_nrw_raw_dir = '/media/gustav/Data/thesisdata/opengeodata.nrw/Schutzgebiete/'                                            # SET ME (parent folder)
-fp_prot_nrw_crop_dir = '/media/gustav/Data/thesisdata/opengeodata.nrw/Schutzgebiete_crop/'                                  # SET ME (parent folder)
-# LIST IST NOT COMPLETE, only included some of the most relevant ones
+fp_prot_nrw_raw_pardir = '/media/gustav/Data/thesisdata/opengeodata.nrw/LINFOS/'                                 # SET ME (parent folder), will be created
+fp_prot_nrw_crop_pardir = '/media/gustav/Data/thesisdata/opengeodata.nrw/LINFOS_crop/'                           # SET ME (parent folder), will be created
+# Complete list of LINFOS NRW Schutzgebiete (Landschaftsinformationssammlung NRW)
+# Note: keys must be the zip file names with .zip extension! zipfile names must end with '_Shape.zip' ! (10 letters! otherwise not working)
 url_prot_linfos_dict = {} # dictionary for downloading, schutzgebiete collected in LINFOS NRW (Landschaftsinformationssammlung NRW)
+url_prot_linfos_dict['Alleenkataster_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Alleenkataster_EPSG25832_Shape.zip'
+url_prot_linfos_dict['BereicheSchutzNatur_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/BereicheSchutzNatur_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Biotopkataster_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Biotopkataster_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Biotoptypen_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Biotoptypen_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Biotopverbundflaechen_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Biotopverbundflaechen_EPSG25832_Shape.zip'
 url_prot_linfos_dict['FFH-Gebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/FFH-Gebiete_EPSG25832_Shape.zip'
 url_prot_linfos_dict['GebieteSchutzNatur_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/GebieteSchutzNatur_EPSG25832_Shape.zip'
+url_prot_linfos_dict['GeschuetzteBiotope_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/GeschuetzteBiotope_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Landschaftsraeume_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Landschaftsraeume_EPSG25832_Shape.zip'
 url_prot_linfos_dict['Landschaftsschutzgebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Landschaftsschutzgebiete_EPSG25832_Shape.zip'
 url_prot_linfos_dict['Nationalpark_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Nationalpark_EPSG25832_Shape.zip'
-url_prot_linfos_dict['Naturschutzgebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Naturschutzgebiete_EPSG25832_Shape.zip'
 url_prot_linfos_dict['Naturparke_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Naturparke_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Naturparke_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Naturparke_EPSG25832_Shape.zip'
+url_prot_linfos_dict['NaturraeumlicheHaupteinheiten_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/NaturraeumlicheHaupteinheiten_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Naturschutzgebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Naturschutzgebiete_EPSG25832_Shape.zip'
 url_prot_linfos_dict['RAMSAR_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/RAMSAR_EPSG25832_Shape.zip' # Ramsar-Gebiete, international bedeutende Feuchtgebiete
+url_prot_linfos_dict['SonstigeSchutzgebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/SonstigeSchutzgebiete_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Vegetationsaufnahmen_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Vegetationsaufnahmen_EPSG25832_Shape.zip'
+url_prot_linfos_dict['Vegetationstypen_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Vegetationstypen_EPSG25832_Shape.zip'
 url_prot_linfos_dict['Vogelschutzgebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Vogelschutzgebiete_EPSG25832_Shape.zip'
-
+url_prot_linfos_dict['Wildnisgebiete_EPSG25832_Shape.zip'] = 'https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/Wildnisgebiete_EPSG25832_Shape.zip'
 
 # Sub-Areas
 # ---------
@@ -289,14 +292,14 @@ print('PART ONE: PREPROCESSING')
 print('-----------------------\n')
 
 #-----------------------------------------------------------------------------#
-#--- AMTLICHE GEMEINDE SCHLÜSSEL (GV-ISys) UND DIGITALE VERWALTUNGSGRENZEN ---#
+#--------------------  DIGITALE VERWALTUNGSGRENZEN (DVG) ---------------------#
 #-----------------------------------------------------------------------------#
 # Note: for bigger gdf better use bounds as argument instead of gdf to get celllists, refactor if needed
 
 # Digitale Verwaltungsgrenzen (DVG)
 # ---------------------------------
 # source: https://www.opengeodata.nrw.de/produkte/geobasis/dvg/
-gdf_spatial_extent = None
+bbox = None
 
 if use_dvg:
     start_time_dataset = time.time()
@@ -316,13 +319,17 @@ if use_dvg:
         print('get gdf of digitale Verwaltungsgrenzen of ', gem_list_selected,' ...')
         gdf_dvg_selected = get_dvg_geodataframe(gem_list_selected, fp_shp_dvg)   # epsg:25832
 
-    # get spatial extents as gdf for cropping other geo data
-    gdf_spatial_extent = get_gdf_spatial_extent_epsg3035(gdf_dvg_selected) # epsg:3035
+    # get bound box as gdf for cropping other geo data (rectangular shaped area)
+    bbox = get_bbox_gdf_epsg3035(gdf_dvg_selected) # epsg:3035
 
     check_dir(fp_dvg_dir_out,verbose=False)
-    print('write gdf_dvg_selected and gdf_spatial_extent to files in ... \n'+fp_dvg_dir_out)
-    gdf_dvg_selected.to_file(fp_dvg_dir_out+'dvg_selected.gpkg', driver='GPKG')
-    gdf_spatial_extent.to_file(fp_dvg_dir_out+'dvg_spatial_extent.gpkg', driver='GPKG')
+    print('write gdf_dvg_selected and bbox to files in ... \n'+fp_dvg_dir_out)
+
+    fp_dvg_selected_gpkg = os.path.join(fp_dvg_dir_out, 'dvg_selected.gpkg')
+    fp_dvg_selected_bbox_gpkg = os.path.join(fp_dvg_dir_out, 'dvg_selected_bbox.gpkg')
+
+    gdf_dvg_selected.to_file(fp_dvg_selected_gpkg, driver='GPKG')
+    bbox.to_file(fp_dvg_selected_bbox_gpkg, driver='GPKG')
 
     # get list of cellnames for Zensusdata, Regionalpläne and Amtliche Basiskarten (ABK)
     celllist_zensus = get_celllist_zensus(gdf_dvg_selected, INSPIRE_size)
@@ -331,9 +338,9 @@ if use_dvg:
     celllist_abk_sw = get_celllist_abk(gdf_dvg_selected, colour=False)
 
     # get a list of AGS ('KN') of all DVG which are (partly or completely) within bounds of selected DVG
-    gdf_dvg_within_spatial_extent = get_gdf_within_spatial_extent(gdf_dvg_all, gdf_spatial_extent)
-    ags_list_within_spatial_extent = list(gdf_dvg_within_spatial_extent['KN'])
-    gem_list_within_spatial_extent = list(gdf_dvg_within_spatial_extent['GN'])
+    gdf_dvg_within_bbox = cut_gdf_to_gdf_ref_geometry(gdf_dvg_all, bbox)
+    ags_list_within_bbox = list(gdf_dvg_within_bbox['KN'])
+    gem_list_within_bbox = list(gdf_dvg_within_bbox['GN'])
 
     print('celllist_zensus[0:3]=',celllist_zensus[0:3])
     print('celllist_rp[0:3]=',celllist_rp[0:3])
@@ -341,34 +348,6 @@ if use_dvg:
     print('celllist_abk_sw[0:3]=',celllist_abk_sw[0:3])
     print('\ntime needed for dataset: ', time.time() - start_time_dataset, 's\n')
 
-# GV-ISys
-# -------
-# GV-ISys: Amtliche Gemeinde Schlüssel (AGS), Amtliche Regionalschlüssel (ARS), PLZ, Gemeindename and Kooridnates (Mittelpunkt)
-# GV-ISys KBS = WGS 84, EPSG: 4326
-# GV-ISys Descrption: https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/Gemeindeverzeichnis/Administrativ/beschreibung-gebietseinheiten.pdf?__blob=publicationFile
-
-if use_gvisys:
-    print('Gemeinde-Verzeichnis-Informationssystem (GV-ISys)')
-    print('-------------------------------------------------\n')
-    start_time_dataset = time.time()
-    # load df with AGS, Gemeindenamen and PLZ from Excel Sheet
-    fp_gvisys_excel = '/media/gustav/Data/thesisdata/destatis_GV-ISys/Alle_politisch_selbstständigen_Gemeinden_31.12.2022/AuszugGV4QAktuell.xlsx'
-    gvisys_sheetname = 'Onlineprodukt_Gemeinden'
-    gvisys_header = [0,1,2,3,4]
-    gvisys_col_ars_land = 2         # column C, started counting at 0 (column A) # ARS-Code: Land
-    gvisys_col_ars_rb = 3           # column D, started counting at 0 (column A) # ARS-Code: Regierungsbezirk
-    gvisys_col_ars_krs = 4          # column E, started counting at 0 (column A) # ARS-Code: Kreis
-    gvisys_col_ars_vb = 5           # column F, started counting at 0 (column A) # ARS-Code: Verbandsgemeinde
-    gvisys_col_ars_gem = 6          # column G, started counting at 0 (column A) # ARS-Code: Gemeinde
-    gvisys_col_ars = [2,3,4,5,6]    # columns C-F, started counting at 0 (column A) # ARS-Code: total
-    gvisys_col_gem = 7              # column H, started counting at 0 (column A) # Gemeindename
-    gvisys_col_plz = 13             # column N, started counting at 0 (column A) #
-    gvisys_col_lon = 14             # column O, started counting at 0 (column A) # Longitude
-    gvisys_col_lat = 15             # column P, started counting at 0 (column A) # Latitude
-
-    df_gvisys = pd.read_excel(fp_gvisys_excel, sheet_name=gvisys_sheetname, skiprows=gvisys_header, header=None, converters={gvisys_col_plz:str})
-
-    print('time needed for dataset: ', time.time() - start_time_dataset, 's\n')
 #-----------------------------------------------------------------------------#
 #------------------------- AMTLICHE BASISKARTEN NRW --------------------------#
 #-----------------------------------------------------------------------------#
@@ -396,6 +375,23 @@ if use_abk_farbe or use_abk_sw:
         fp_abk_dir = os.path.join(fp_abk_pardir, 'sw')
         check_dir(fp_abk_dir)   # check if dir exists, if not create it
         download_tiff_tiles(url_abk_dir, fp_abk_dir, celllist_abk_sw)
+
+    # download bash script to merge all ABK tiles into one single mosaic
+    if not os.path.isfile(os.path.join(fp_abk_dir, os.path.basename(url_abk_bash_script))):
+        os.chdir(fp_abk_dir)
+        wget.download(url_abk_bash_script)
+        print("downloaded bash script to merge all ABK tiles into one single mosaic into ABK directory")
+
+    #TODO: 1) check if this works from windows, 2) skip if already done (probably split into two scripts for sw and farbe)
+    if len(celllist_abk_farbe) > 400 or len(celllist_abk_sw) > 400:
+        # run bash script with subprocess
+        print('more than 400 ABK tiles, try to run bash script to merge all ABK tiles into one single mosaic ...')
+        try:
+            os.chdir(fp_abk_pardir)
+            subprocess.call(['bash', 'create_single_mosaic_vrt.sh'])
+        except:
+            print('ERROR: subprocess.call failed')
+            print('       try to run bash script manually from: ', fp_abk_dir)
 
     print('time needed for dataset: ', time.time() - start_time_dataset, 's\n')
 #-----------------------------------------------------------------------------#
@@ -464,9 +460,9 @@ if use_osm:
         file_sizeMB += os.path.getsize(os.path.join(fp_osm_dir_raw, layer + '.shp'))/1e6 # float
     print('Total size of OSM data: ', str(round(file_sizeMB)), 'MB with ', len(fiona.listlayers(fp_osm_dir_raw)), 'layers.')
 
-    # get gdfs layer-wise croppped to spatial extent and write to file
-    if gdf_spatial_extent is not None:
-        print('Start with OSM data layer-wise: read, crop to spatial extent (and write if selected)...\\')
+    # get gdfs layer-wise croppped to bound box and write to file
+    if bbox is not None:
+        print('Start with OSM data layer-wise: read, crop to bound box (and write if selected)...\\')
         print('\tread from: ' + fp_osm_dir_raw)
         if write_osm_to_shp: print('\twrite to: ' + os.path.join(fp_crop_shp_dir, '<layername>.shp'))
         if write_osm_to_gpkg: print('\twrite to: ' + os.path.join(fp_crop_gpkg_dir, '<layername>.gpkg\n'))
@@ -474,12 +470,12 @@ if use_osm:
             print('layer: '+layer)
             start_time = time.time()
             fp_layer = os.path.join(fp_osm_dir_raw, layer + '.shp')
-            gdf_dict_osm[layer] = gpd.read_file(fp_osm_dir_raw,layer=layer,bbox=gdf_spatial_extent,engine="fiona")
+            gdf_dict_osm[layer] = gpd.read_file(fp_osm_dir_raw,layer=layer,bbox=bbox,engine="fiona")
             file_sizeMB = str((round(os.path.getsize(fp_layer) / 1e3) / 1e3))
             print('\tread layer from .shp in '+str(time.time() - start_time)+' s. (ca. '+file_sizeMB+' MB)')
             if write_osm_to_shp:
                 start_time = time.time()
-                fp_layer = os.path.join(fp_crop_shp_dir,layer+'.shp')
+                fp_layer = os.path.join(fp_crop_shp_dir, layer + '.shp')
                 gdf_dict_osm[layer].to_file(fp_layer,driver='ESRI Shapefile')
                 file_sizeMB = str((round(os.path.getsize(fp_layer) / 1e3) / 1e3))
                 print('\twritten layer to .shp in '+str(time.time() - start_time)+' s. (ca. '+file_sizeMB+' MB)')
@@ -504,7 +500,7 @@ if use_osm:
 
     # get gdfs layer-wise without cropping # TODO: remove? not used
     else:
-        print('Warning: no spatial extent defined, will read all layers in '+fp_osm_dir_raw+' without cropping')
+        print('Warning: no bound box defined, will read all layers in '+fp_osm_dir_raw+' without cropping')
         for layer in fiona.listlayers(fp_osm_dir_raw):
             print('\tstart reading layer: '+layer+'...')
             start_time = time.time()
@@ -578,8 +574,8 @@ if use_hu:
 
     # check if gfk-dictionary is available, NEW VERSION (manually modified csv)
     if not os.path.isfile(fp_hu_gfk_mod_csv):
-        os.chdir(fp_hu_dir_out)
         print('Download gfk-dictionary from '+url_hu_gfk_mod+'...')
+        os.chdir(fp_hu_dir_out)
         wget.download(url_hu_gfk_mod)
 
     hu_dict_df = pd.read_csv(fp_hu_gfk_mod_csv, encoding='unicode_escape')
@@ -599,12 +595,12 @@ if use_hu:
         print('Load cropped Hausumringe data from '+fp_hu_gpkg_crop+' ...')
         gdf_hu = gpd.read_file(fp_hu_gpkg_crop)
 
-    # else: read raw data, crop to spatial extent, translate gfk_code to gfk_text, write to gpkg and shp
+    # else: read raw data, crop to bound box, translate gfk_code to gfk_text, write to gpkg and shp
     else:
-        # read hu and crop to spatial extent
-        print('start reading hu clipped to spatial extent...')
+        # read hu and crop to bound box
+        print('start reading hu clipped to bound box...')
         start_time = time.time()
-        gdf_hu = gpd.read_file(fp_hu_shp_raw,bbox=gdf_spatial_extent,engine="fiona")
+        gdf_hu = gpd.read_file(fp_hu_shp_raw,bbox=bbox,engine="fiona")
         print('finished reading in %s seconds.' % (time.time() - start_time))
 
         # translate gfk_code column to gfk_text column
@@ -641,10 +637,10 @@ if use_rwb:
     print('-----------------------------\n')
 
     fp_rwb_dir_zips = os.path.join(fp_rwb_dir, 'zips')
-    fp_rwb_hu_crop = os.path.join(fp_rwb_dir, 'rwb_hu_crop.gpkg')
-    fp_rwb_wld_crop = os.path.join(fp_rwb_dir, 'rwb_wld_crop.gpkg')
-    fp_rwb_hu_uncropped = os.path.join(fp_rwb_dir, 'rwb_hu_all_ags_within_spatial_extent.gpkg')  # testing
-    fp_rwb_wld_uncropped = os.path.join(fp_rwb_dir, 'rwb_wld_all_ags_within_spatial_extent.gpkg')  # testing
+    fp_rwb_hu_crop = os.path.join(fp_rwb_dir, 'rwb_hu_crop.gpkg')    # for reading and writing
+    fp_rwb_wld_crop = os.path.join(fp_rwb_dir, 'rwb_wld_crop.gpkg')  # for reading and writing
+    fp_rwb_hu_uncropped = os.path.join(fp_rwb_dir, 'rwb_hu_all_ags_within_bbox.gpkg')   # for testing
+    fp_rwb_wld_uncropped = os.path.join(fp_rwb_dir, 'rwb_wld_all_ags_within_bbox.gpkg') # for testing
 
     check_dir(fp_rwb_dir)
     check_dir(fp_rwb_dir_zips)
@@ -662,19 +658,19 @@ if use_rwb:
         print('\nDid not find cropped RWB Hausumringe and Wärmeliniendichte LANUV data at:')
         print(fp_rwb_hu_crop)
         print(fp_rwb_wld_crop)
-        print('will search for uncropped data offline, load and crop it to spatial extent.')
+        print('will search for uncropped data offline, load and crop it to bound box.')
         print('if offline data is not available download RWB LANUV data as zips and unzip them first.')
         print('data for each AGS will be loaded and combined into a single geodataframe and later saved')
         print('\tfolder for cropped/unzipped data: '+fp_rwb_dir)
         print('\tfolder for zipped uncropped data: '+fp_rwb_dir_zips)
         print('\turl to download if necessary: '+url_rwb_dir)
-        print(str(len(gem_list_within_spatial_extent))+' Gemeinden within area within spatial extent to search for:')
-        print(gem_list_within_spatial_extent)
+        print(str(len(gem_list_within_bbox))+' Gemeinden within area within bound box to search for:')
+        print(gem_list_within_bbox)
         start_time = time.time()
         os.chdir(fp_rwb_dir_zips) # files will be downloaded to this directory
-        gem_list_within_spatial_extent_edited = [] # debug
-        for idx, ags in enumerate(ags_list_within_spatial_extent):
-            gem = gem_list_within_spatial_extent[idx] # Gemeindename used in filename without special characters
+        gem_list_within_bbox_edited = [] # debug
+        for idx, ags in enumerate(ags_list_within_bbox):
+            gem = gem_list_within_bbox[idx] # Gemeindename used in filename without special characters
             gem = gem.replace('ü', 'ue')
             gem = gem.replace('ö', 'oe')
             gem = gem.replace('ä', 'ae')
@@ -683,7 +679,7 @@ if use_rwb:
             gem = gem.split('(')[0]  # cut of things like '(Ruhr)', 'Westf.', etc.
             if gem[-1] == '-':  # cut of trailing '-' if present
                 gem = gem[:-1]
-            gem_list_within_spatial_extent_edited.append(gem) # debug
+            gem_list_within_bbox_edited.append(gem) # debug
             filename_zip = 'Raumwaermebedarfsmodell-NRW_' + ags + '_' + gem + '_EPSG25832_Shape.zip'
             url_rwb_zip = os.path.join(url_rwb_dir, filename_zip)
             fp_rwb_zip = os.path.join(fp_rwb_dir_zips, filename_zip)
@@ -714,12 +710,12 @@ if use_rwb:
         gdf_rwb_wld_uncropped = gpd.GeoDataFrame() # geodataframe to combine all rwb wld gdfs into one
 
         start_time = time.time()
-        print('read RWB Hausumringe/Wärmeliniendichte LANUV into geodataframes for each AGS within spatial extent and combine into two single geodataframes...')
+        print('read RWB Hausumringe/Wärmeliniendichte LANUV into geodataframes for each AGS within bound box and combine into two single geodataframes...')
         # read RWB Hausumringe LANUV into geodataframe for each AGS
-        for ags in ags_list_within_spatial_extent:
+        for ags in ags_list_within_bbox:
             # print progress e.g. 'Mettmann (1/26)' or 'Gevelsberg (26/26)'
-            print('\t'+gem_list_within_spatial_extent[ags_list_within_spatial_extent.index(ags)]+' ('+str(
-                ags_list_within_spatial_extent.index(ags)+1)+'/'+str(len(ags_list_within_spatial_extent))+')')
+            print('\t'+gem_list_within_bbox[ags_list_within_bbox.index(ags)]+' ('+str(
+                ags_list_within_bbox.index(ags)+1)+'/'+str(len(ags_list_within_bbox))+')')
             fp_rwb_ags_dir = os.path.join(fp_rwb_dir, ags)  # sub directory for each ags
             fp_rwb_hu_shp = os.path.join(fp_rwb_ags_dir, 'hausumringe-' + ags + '.shp')
             fp_rwb_wld_shp = os.path.join(fp_rwb_ags_dir, 'waermeliniendichte-' + ags + '.shp')
@@ -727,18 +723,18 @@ if use_rwb:
             gdf_rwb_wld_per_ags_dict[ags] = gpd.read_file(fp_rwb_wld_shp)
             gdf_rwb_hu_uncropped = gdf_rwb_hu_uncropped.append(gdf_rwb_hu_per_ags_dict[ags])
             gdf_rwb_wld_uncropped = gdf_rwb_wld_uncropped.append(gdf_rwb_wld_per_ags_dict[ags])
-        print('\tread RWB Hausumringe/Wärmeliniendichte LANUV into geodataframes for each AGS within spatial extent and combined them into two single geodataframes')
+        print('\tread RWB Hausumringe/Wärmeliniendichte LANUV into geodataframes for each AGS within bound box and combined them into two single geodataframes')
         print('\tin '+str(int((time.time() - start_time)/60))+' min '+str(int((time.time() - start_time)%60))+' sec')
 
         start_time = time.time()
-        print('cut combined RWB Hausumringe/Wärmeliniendichte LANUV geodataframes to spatial extent (rectangle)...')
-        gdf_rwb_hu_crop = get_gdf_within_spatial_extent(gdf_rwb_hu_uncropped, gdf_spatial_extent)
-        gdf_rwb_wld_crop = get_gdf_within_spatial_extent(gdf_rwb_wld_uncropped, gdf_spatial_extent)
-        print('\tcut combined RWB Hausumringe/Wärmeliniendichte LANUV geodataframes to spatial extent (rectangle)')
+        print('cut combined RWB Hausumringe/Wärmeliniendichte LANUV geodataframes to bound box (rectangle)...')
+        gdf_rwb_hu_crop = get_gdf_within_bbox(gdf_rwb_hu_uncropped, bbox)
+        gdf_rwb_wld_crop = get_gdf_within_bbox(gdf_rwb_wld_uncropped, bbox)
+        print('\tcut combined RWB Hausumringe/Wärmeliniendichte LANUV geodataframes to bound box (rectangle)')
         print('\tin '+str(int((time.time() - start_time)/60))+' min '+str(int((time.time() - start_time)%60))+' sec')
 
         start_time = time.time()
-        print('write RWB Hausumringe/Wärmeliniendichte LANUV geodataframes cropped to spatial extent to ...')
+        print('write RWB Hausumringe/Wärmeliniendichte LANUV geodataframes cropped to bound box to ...')
         print('\t'+fp_rwb_hu_crop)
         print('\t'+fp_rwb_wld_crop)
         gdf_rwb_hu_crop.to_file(fp_rwb_hu_crop, driver='GPKG')
@@ -747,16 +743,17 @@ if use_rwb:
 
         # testing: write uncropped gdfs to gpkg
         start_time = time.time()
-        print('write RWB Hausumringe/Wärmeliniendichte LANUV of all AGS within spatial extent (uncropped) to ...')
+        print('write RWB Hausumringe/Wärmeliniendichte LANUV of all AGS within bound box (uncropped) to ...')
         print('\t'+fp_rwb_hu_uncropped)
         print('\t'+fp_rwb_wld_uncropped)
         gdf_rwb_hu_uncropped.to_file(fp_rwb_hu_uncropped, driver='GPKG')
         gdf_rwb_wld_uncropped.to_file(fp_rwb_wld_uncropped, driver='GPKG')
         print('\twrote them to .gpkg in '+str(int((time.time() - start_time)/60))+' min '+str(int((time.time() - start_time)%60))+' sec')
+        # del gdf_rwb_hu_uncropped, gdf_rwb_wld_uncropped
 
-        gdf_rwb_hu = gdf_rwb_hu_crop
-        gdf_rwb_wld = gdf_rwb_wld_crop
-        del gdf_rwb_hu_crop, gdf_rwb_wld_crop #, gdf_rwb_hu_uncropped, gdf_rwb_wld_uncropped
+    gdf_rwb_hu = gdf_rwb_hu_crop
+    gdf_rwb_wld = gdf_rwb_wld_crop
+    del gdf_rwb_hu_crop, gdf_rwb_wld_crop
 
     print('needed time for dataset: ', str(int((time.time() - start_time_dataset)/60))+' min '+str(int((time.time() - start_time_dataset)%60))+' sec\n')
 
@@ -782,8 +779,8 @@ if use_zensus_wohn:
     print("start with zensus wohnungsdaten 100m ...")
 
     # file paths
-    fname_wohn100m_remapped_geo_no_ext = 'Wohnungen100m_q' + str(zensus_q_threshold) + '_remapped_geo'                 # default filename without extension
-    fp_wohn100m_remapped_geo_no_ext = os.path.join(fp_zensus_dir_out,fname_wohn100m_remapped_geo_no_ext)                    # filepath for writing and reading
+    fname_wohn100m_remapped_geo_no_ext = 'Wohnungen100m_q' + str(zensus_q_threshold) + '_remapped_geo'           # default filename without extension
+    fp_wohn100m_remapped_geo_no_ext = os.path.join(fp_zensus_dir_out,fname_wohn100m_remapped_geo_no_ext)                # filepath for writing and reading
 
     # a) use already remapped data, if it exists as gpkg
     if os.path.isfile(fp_wohn100m_remapped_geo_no_ext+'.gpkg'):
@@ -834,8 +831,8 @@ if use_zensus_geb:
     print("start with zensus gebäudedaten 100m ...")
 
     # file paths
-    fname_geb100m_remapped_geo_no_ext = 'Geb100m_q' + str(zensus_q_threshold) + '_remapped_geo'                        # default filename without extension
-    fp_geb100m_remapped_geo_no_ext = os.path.join(fp_zensus_dir_out,fname_geb100m_remapped_geo_no_ext)                      # filepath for writing and reading
+    fname_geb100m_remapped_geo_no_ext = 'Geb100m_q' + str(zensus_q_threshold) + '_remapped_geo'                  # default filename without extension
+    fp_geb100m_remapped_geo_no_ext = os.path.join(fp_zensus_dir_out,fname_geb100m_remapped_geo_no_ext)                  # filepath for writing and reading
 
     geb100m = zensusdata()  # create zensusdata object instance
 
@@ -897,16 +894,16 @@ if use_zensus_pop:
     pop100m.gdf = pop100m.get_gdf_from_df()
 
     # debug
-    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out,'pop100m_crop_orig.shp'), driver='ESRI Shapefile',OVERWRITE=False)
-    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out,'pop100m_crop_orig.gpkg'), driver='GPKG',OVERWRITE=False)
+    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out, 'pop100m_crop_orig.shp'), driver='ESRI Shapefile',OVERWRITE=False)
+    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out, 'pop100m_crop_orig.gpkg'), driver='GPKG',OVERWRITE=False)
 
     # filter out Einwohner*innen values -1
     print('filtering out Einwohner*innen values -1 ...')
     #pop100m.df = pop100m.df.loc[pop100m.df['Einwohner'] >= 0] # net needed yet because gdf is used for further processing
     pop100m.gdf = pop100m.gdf.loc[pop100m.gdf['Einwohner'] >= 0]
     print('write zensus einwohner_innen daten 100m to files ...')
-    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out,'pop100m_crop_filter.shp'), driver='ESRI Shapefile',OVERWRITE=False)
-    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out,'pop100m_crop_filter.gpkg'), driver='GPKG',OVERWRITE=False)
+    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out, 'pop100m_crop_filter.shp'), driver='ESRI Shapefile',OVERWRITE=False)
+    pop100m.gdf.to_file(os.path.join(fp_zensus_dir_out, 'pop100m_crop_filter.gpkg'), driver='GPKG',OVERWRITE=False)
     print('\tread, cropped and wrote zensus einwohner_innen daten 100m to files in ', time.time() - start_time, 's\n')
 
 # Pre-Analysis of Zensus Data (Gebäude und Wohnungen)
@@ -928,8 +925,8 @@ if perform_pre_analysis_zensus_data and (use_zensus_wohn or use_zensus_geb):
                 # create dataframe with further analysis
                 zensus_geb_merkmal_analyse_dict[key_merkmal] = get_zensus_geb_merkmal_analyse_df(key_merkmal,geb100m.df,geb100m.m_dict)
                 # write df to csv
-                fp_zensus_analysis = os.path.join(fp_analysis_dir, 'zensus_geb_analysis_q' + str(
-                    zensus_q_threshold) + '_' + key_merkmal + '.csv')
+                filename = 'zensus_geb_analysis_q' + str(zensus_q_threshold) + '_' + key_merkmal + '.csv'
+                fp_zensus_analysis = os.path.join(fp_analysis_dir, filename)
                 zensus_geb_merkmal_analyse_dict[key_merkmal].to_csv(fp_zensus_analysis, encoding='utf-8', index=False)
                 print('\tZensus Merkmals-Ausprägungen Häufigkeiten Analysedata also written to')
                 print(fp_zensus_analysis)
@@ -950,8 +947,8 @@ if perform_pre_analysis_zensus_data and (use_zensus_wohn or use_zensus_geb):
                 # create dataframe with further analysis
                 zensus_wohn_merkmal_analyse_dict[key_merkmal] = get_zensus_geb_merkmal_analyse_df(key_merkmal,wohn100m.df,wohn100m.m_dict)
                 # write df to csv
-                fp_zensus_analysis = os.path.join(fp_analysis_dir, 'zensus_wohn_analysis_q' + str(
-                                                                    zensus_q_threshold) + '_' + key_merkmal + '.csv')
+                filename = 'zensus_wohn_analysis_q' + str(zensus_q_threshold) + '_' + key_merkmal + '.csv'
+                fp_zensus_analysis = os.path.join(fp_analysis_dir, filename)
                 zensus_wohn_merkmal_analyse_dict[key_merkmal].to_csv(fp_zensus_analysis, encoding='utf-8', index=False)
                 print('\tZensus Merkmals-Ausprägungen Häufigkeiten Analysedata also written to')
                 print(fp_zensus_analysis)
@@ -960,21 +957,16 @@ if perform_pre_analysis_zensus_data and (use_zensus_wohn or use_zensus_geb):
 #-----------------------------------------------------------------------------#
 #------------------------- NRW Standorte Strom Wärme -------------------------#
 #-----------------------------------------------------------------------------#
-
-if use_ee_nrw and use_gvisys:
+#todo Industrielle Abwärme data contians x,y coordinates, but no geometry data
+#todo delete the part with getting geocoordinates from plz data
+if use_ee_nrw:
     start_time_dataset = time.time()
     print('NRW Standorte Strom Wärme (LANUV)')
     print('---------------------------------\n')
 
     # check filepaths
-    if os.path.isdir(fp_eenrw_gdb) == False:
-        print('Error: Directory does not exist: ' + fp_eenrw_gdb)
-        print('Please download OSM data first and set folder path correctly. Will abort.')
-        sys.exit()
-    if os.path.isdir(fp_eenrw_crop) == False:
-        print('Warning: Directory does not exist: ' + fp_eenrw_crop)
-        print('To save cropped data will create directory: ' + fp_eenrw_crop)
-        os.mkdir(fp_eenrw_crop)
+    check_dir(fp_eenrw_gdb)
+    check_dir(fp_eenrw_crop)
 
     # initialize variables
     df_dict_eenrw_excel, gdf_dict_eenrw_excel, gdf_dict_eenrw_gdb = {}, {}, {}          # to store (geo-)dataframes
@@ -990,8 +982,8 @@ if use_ee_nrw and use_gvisys:
     # ------------------
 
     # Warning handling
-    if gdf_spatial_extent is None:
-        print('Error: gdf_spatial_extent is None. Will abort. Reading unfiltered data can kill the memory.')
+    if bbox is None:
+        print('Error: bbox is None. Will abort. Reading unfiltered data can kill the memory.')
         sys.exit()
     if layer_whitelist == [] or layer_whitelist is None:
         print('Warning: layer_whitelist is empty. Will not filter layers by it.')
@@ -1027,7 +1019,7 @@ if use_ee_nrw and use_gvisys:
             art = layer_gdf.split('_')[0]
             print('art: '+art)
 
-        fp_eenrw_crop_layer_gpkg = os.path.join(fp_eenrw_crop, layer_gdf+'.gpkg')
+        fp_eenrw_crop_layer_gpkg = os.path.join(fp_eenrw_crop, layer_gdf + '.gpkg')
 
         # read layer from gpkg if already cropped
         if os.path.isfile(fp_eenrw_crop_layer_gpkg):
@@ -1035,7 +1027,7 @@ if use_ee_nrw and use_gvisys:
             print('\tfound already cropped data and loaded it: '+layer_gdf)
             continue
         # read layer from raw data (cropped to bbox)
-        gdf_dict_eenrw_gdb[layer_gdf] = gpd.read_file(fp_eenrw_gdb,layer=layer_gdf,bbox=gdf_spatial_extent,engine='fiona')
+        gdf_dict_eenrw_gdb[layer_gdf] = gpd.read_file(fp_eenrw_gdb,layer=layer_gdf,bbox=bbox,engine='fiona')
 
         # to prevent writing empty layers to file (error) -> skip writing
         if gdf_dict_eenrw_gdb[layer_gdf].empty == True:
@@ -1043,7 +1035,7 @@ if use_ee_nrw and use_gvisys:
             continue
 
         # write layer to gpkg
-        gdf_dict_eenrw_gdb[layer_gdf].to_file(fp_eenrw_crop_layer_gpkg,driver='GPKG', OVERWRITE=True)  #
+        gdf_dict_eenrw_gdb[layer_gdf].to_file(fp_eenrw_crop_layer_gpkg,driver='GPKG')  #
 
         # write layer to shapefile # NOTE DONT USE SHAPEFILES: slower, bigger, col names cut to 10 chars
         # adjust column names in current gdf if necessary for shapefile export
@@ -1070,7 +1062,7 @@ if use_ee_nrw and use_gvisys:
     # -----------------
     key_kwk, key_abw = None, None # keys for gdf_dict_eenrw_xlsx, also sheet names in excel file
 
-    fp_eenrw_uncrop = fp_eenrw_dir + 'ind_abw_kwk_uncropped/'                                        # debugging directory, to check if cropping with geopandas.GeoDataframe.cx works
+    fp_eenrw_uncrop = os.path.join(fp_eenrw_dir,'ind_abw_kwk_uncropped/')                                               # debugging directory, to check if cropping with geopandas.GeoDataframe.cx works
     check_dir(fp_eenrw_uncrop)
 
     # Check if file exists and download if not
@@ -1108,32 +1100,32 @@ if use_ee_nrw and use_gvisys:
     print(str(list(df_dict_eenrw_excel.keys()))+'\n')
 
     # if georeferenced cropped data exists already load it from gpkg with layername
-    # otherwise add geometry column to df from xlsx file and crop them to spatial extent
+    # otherwise add geometry column to df from xlsx file and crop them to bound box
 
     # bounds used to crop KWK and Industrielle Abwärme data if not already cropped
-    minx, miny, maxx, maxy = gdf_spatial_extent.to_crs(epsg=25832).total_bounds
+    minx, miny, maxx, maxy = bbox.to_crs(epsg=25832).total_bounds
 
     if key_kwk is None:
         print('Error: key_kwk is None. No KWK sheet found in xlsx file.')
     else: # KWK Sheet
-        fp_eenrw_crop_layer_gpkg = fp_eenrw_crop + key_kwk + '.gpkg'
-        fp_eenrw_uncrop_layer_gpkg = fp_eenrw_uncrop + key_kwk + '.gpkg'
+        fp_eenrw_crop_layer_gpkg = os.path.join(fp_eenrw_crop, key_kwk + '.gpkg')
+        fp_eenrw_uncrop_layer_gpkg = os.path.join(fp_eenrw_uncrop, key_kwk + '.gpkg')
 
         # if georeferenced cropped data exists already load it from gpkg with layername
         if os.path.isfile(fp_eenrw_crop_layer_gpkg) == True:
             gdf_dict_eenrw_excel[key_kwk] = gpd.read_file(fp_eenrw_crop_layer_gpkg)
             print(key_kwk+': found already cropped data. gdf is loaded from:')
             print(fp_eenrw_crop_layer_gpkg)
-        # else add geometry column to df from xlsx file, convert to gdf, crop them to spatial extent and write to gpkg
+        # else add geometry column to df from xlsx file, convert to gdf, crop them to bound box and write to gpkg
         else:
-            print(key_kwk+': start adding geometry column and cropping to spatial extent for df:')
+            print(key_kwk+': start adding geometry column and cropping to bound box for df:')
             # coordinates from UTM32_Ost and UTM32_Nord columns as Point (epsg:25832)
             df_dict_eenrw_excel[key_kwk]['geometry'] = df_dict_eenrw_excel[key_kwk].apply(lambda x: Point(x['UTM32_Ost'], x['UTM32_Nord']), axis=1)
             gdf_dict_eenrw_excel[key_kwk] = gpd.GeoDataFrame(df_dict_eenrw_excel[key_kwk], geometry='geometry', crs={'init': 'epsg:25832'})
             gdf_dict_eenrw_excel[key_kwk].to_file(fp_eenrw_uncrop_layer_gpkg,driver='GPKG') # write layer to gpkg
             print(key_kwk+': df with geometry is uncropped and written to file: ')
             print('\t'+fp_eenrw_uncrop_layer_gpkg)
-            gdf_dict_eenrw_excel[key_kwk] = gdf_dict_eenrw_excel[key_kwk].cx[minx:maxx, miny:maxy] # crop to spatial extent
+            gdf_dict_eenrw_excel[key_kwk] = gdf_dict_eenrw_excel[key_kwk].cx[minx:maxx, miny:maxy] # crop to bound box
             gdf_dict_eenrw_excel[key_kwk].to_file(fp_eenrw_crop_layer_gpkg,driver='GPKG')  # write layer to gpkg
             print(key_kwk+': df with geometry is cropped and written to file: ')
             print('\t'+fp_eenrw_crop_layer_gpkg)
@@ -1149,17 +1141,16 @@ if use_ee_nrw and use_gvisys:
             gdf_dict_eenrw_excel[key_abw] = gpd.read_file(fp_eenrw_crop_layer_gpkg)
             print(key_abw+': found already cropped data. gdf is loaded from:')
             print(fp_eenrw_crop_layer_gpkg)
-        # else add geometry column to df from xlsx file, convert to gdf, crop them to spatial extent and write to gpkg
+        # else add geometry column to df from xlsx file, convert to gdf, crop them to bound box and write to gpkg
         else:
-            print(key_abw+': start adding geometry column and cropping to spatial extent for df:')
-            # coordinates from Plz or Gemeindenamen as Point, (epsg:4326 -> epsg:25832): Ortsmittelpunkte # TODO: usage of gvisys as backup, not used, can be removed from function
-            df_dict_eenrw_excel[key_abw]['geometry'] = add_geometry_to_df_eenrw_excel_abw_epsg4326(df_dict_eenrw_excel,key_abw,df_gvisys,gvisys_col_plz,gvisys_col_lon,gvisys_col_lat)
-            gdf_dict_eenrw_excel[key_abw] = gpd.GeoDataFrame(df_dict_eenrw_excel[key_abw], geometry='geometry', crs='epsg:4326')
-            gdf_dict_eenrw_excel[key_abw] = gdf_dict_eenrw_excel[key_abw].to_crs(epsg=25832) # crs conversion to epsg:25832
+            print(key_abw+': start adding geometry column and cropping to bound box for df:')
+            # coordinates from Rechtswert and Hochwert columns as Point (epsg:25832)
+            df_dict_eenrw_excel[key_abw]['geometry'] = df_dict_eenrw_excel[key_abw].apply(lambda x: Point(x['Rechtswert'], x['Hochwert']), axis=1)
+            gdf_dict_eenrw_excel[key_abw] = gpd.GeoDataFrame(df_dict_eenrw_excel[key_abw], geometry='geometry', crs='epsg:25832') # most likely also epsg:25832 like kwk sheet
             gdf_dict_eenrw_excel[key_abw].to_file(fp_eenrw_uncrop_layer_gpkg,driver='GPKG') # write layer to gpkg
             print(key_abw+': df with geometry is uncropped and written to file:')
             print('\t'+fp_eenrw_uncrop_layer_gpkg)
-            gdf_dict_eenrw_excel[key_abw] = gdf_dict_eenrw_excel[key_abw].cx[minx:maxx, miny:maxy] # crop to spatial extent
+            gdf_dict_eenrw_excel[key_abw] = gdf_dict_eenrw_excel[key_abw].cx[minx:maxx, miny:maxy] # crop to bound box
             gdf_dict_eenrw_excel[key_abw].to_file(fp_eenrw_crop_layer_gpkg,driver='GPKG')  # write layer to gpkg
             print(key_abw+': df with geometry is cropped and written to file:')
             print('\t'+fp_eenrw_crop_layer_gpkg)
@@ -1169,65 +1160,192 @@ if use_ee_nrw and use_gvisys:
 #-----------------------------------------------------------------------------#
 #----------------------------- Schutzgebiete NRW -----------------------------#
 #-----------------------------------------------------------------------------#
+# use LINFOS NRW data from
+# https://www.opengeodata.nrw.de/produkte/umwelt_klima/naturschutz/linfos/
 
-# folder structure
-#
-# fp_prot_nrw_raw_dir
-#  |--- zips
-#        |--- name1.zip
-#               |--- randomname1.shp
-#        |--- name2.zip
-#               |--- randomname2a.shp
-#               |--- randomname2b.shp
-#  |--- shps
-#        |--- name1.shp
-#        |--- name2.shp
-#
-# fp_prot_nrw_crop_dir
-#  |--- gpkgs
-#        |--- shp1.gpkg
-
+#todo WIP not working yet
 if use_prot_nrw:
+    # script will use folder structure as described below
+    # folders will be created if they do not exist
+    # if offline data is available, it will be used
+    # if not, data will be downloaded from opengeodata.nrw.de
+
+    # folder structure                      corresponding variables
+    # ----------------                      -----------------------
+    # raw_pardir_name                       fp_prot_nrw_raw_pardir (static)
+    #  |--- zips                            fp_prot_nrw_raw_zip_dir (static)
+    #        |--- name1.zip                     filename_zip (dynamic, for loop)
+    #               |--- crypticname1.shp
+    #        |--- name2.zip                     filename_zip (dynamic, for loop)
+    #               |--- crypticname2a.shp
+    #               |--- crypticname2b.shp
+    #  |--- shps                            fp_prot_nrw_raw_shp_dir (static)
+    #        |--- name1                         prot_name (dynamic, for loop)
+    #               |--- crypticname1.shp
+    #        |--- name2                         prot_name (dynamic, for loop)
+    #               |--- crypticname2a.shp
+    #               |--- crypticname2b.shp
+    # crop_pardir_name                      fp_prot_nrw_crop_pardir (static)
+    #  |--- gpkgs                           fp_prot_nrw_crop_gpkg_dir (static)
+    #        |--- name1                         prot_name (dynamic, for loop)
+    #               |--- crypticname1.gpkg
+    #        |--- name2                         prot_name (dynamic, for loop)
+    #               |--- crypticname2a.gpkg
+    #               |--- crypticname2b.gpkg
+
     print('Schutzgebiete NRW')
     print('------------------\n')
     start_time_dataset = time.time()
 
-    check_dir(fp_prot_nrw_raw_dir)
-    check_dir(fp_prot_nrw_crop_dir)
+    fp_prot_nrw_raw_zip_dir = os.path.join(fp_prot_nrw_raw_pardir, 'zips')
+    fp_prot_nrw_raw_shp_dir = os.path.join(fp_prot_nrw_raw_pardir, 'shps')
+    fp_prot_nrw_crop_gpkg_dir = os.path.join(fp_prot_nrw_crop_pardir, 'gpkgs')
+
+    check_dir(fp_prot_nrw_raw_pardir)
+    check_dir(fp_prot_nrw_raw_zip_dir)
+    check_dir(fp_prot_nrw_raw_shp_dir)
+    check_dir(fp_prot_nrw_crop_pardir)
+    check_dir(fp_prot_nrw_crop_gpkg_dir)
+
+    gdf_prot_nrw_dict = {}  # dict for gdfs with protection areas, key: name of protection area, value: gdf
 
     for filename_zip in url_prot_linfos_dict.keys():
+        # dynamic variables (for loop) used for each protection area
+        prot_name = filename_zip[:-10] # e.g. FFH-Gebiete_EPSG25832 instead of FFH-Gebiete_EPSG25832_Shape.zip
+        fp_dir_zip = os.path.join(fp_prot_nrw_raw_zip_dir, filename_zip)
+        fp_dir_shp = os.path.join(fp_prot_nrw_raw_shp_dir, prot_name+'_Shape')       # e.g. FFH-Gebiete_EPSG25832_Shape
+        fp_dir_gpkg = os.path.join(fp_prot_nrw_crop_gpkg_dir, prot_name+'_Geopackage')   # e.g. FFH-Gebiete_EPSG25832_Geopackage
+        gdf_prot_nrw_dict[prot_name] = [] # init empty list for gdfs
 
-        fp_dir_zip = os.path.join(fp_prot_nrw_raw_dir, filename_zip)
+        check_dir(fp_dir_shp)
+        check_dir(fp_dir_gpkg)
+
+        # create list at beginning for case distinction if files exist already
+        gpkg_filenames = [f for f in os.listdir(fp_dir_gpkg) if f.endswith('.gpkg')] # e.g. ['vw_bsnpolygonproved.gpkg', ...]
+        shp_filenames = [f for f in os.listdir(fp_dir_shp) if f.endswith('.shp')] # e.g. ['vw_bsnpolygonproved.shp', ...]
+        filenames_without_ext = [] # list that will be filled with filenames without extension from extracted zip files
+
+        print(prot_name+':') # e.g. FFH-Gebiete_EPSG25832
+
+        # check if already cropped data exists
+        if len(gpkg_filenames) > 0:
+            print('\tfound already cropped data, loading gdf')
+            print('\t\tfrom: '+fp_dir_gpkg)
+            for index, gpkg_file in enumerate(gpkg_filenames):
+                fp_gpkg = os.path.join(fp_dir_gpkg, gpkg_file)
+                gdf_prot_nrw_dict[prot_name].append(gpd.read_file(fp_gpkg))
+                print('\tloaded gdf ',index+1,'/',len(gpkg_filenames),' from ',gpkg_file)
+            continue
+
+        # check if already unzipped data exists
+        if len(shp_filenames) > 0:
+            print('\tfound already unzipped data, loading gdf')
+            print('\t\tfrom: '+fp_dir_shp)
+            for index, shp_file in enumerate(shp_filenames):
+                filenames_without_ext.append(os.path.splitext(shp_file)[0])
+                fp_shp = os.path.join(fp_dir_shp, shp_file)
+                try:
+                    gdf_prot_nrw_dict[prot_name].append(
+                        gpd.read_file(fp_shp, bbox=bbox, engine='fiona'))
+                    print('\tloaded gdf ',index+1,'/',len(shp_filenames),' and cropped to bound box from',
+                          os.path.basename(fp_shp))
+                except:
+                    print('\tno bound box defined, will not crop gdf!')
+                    gdf_prot_nrw_dict[prot_name].append(gpd.read_file(fp_shp))
+                    print('\tloaded gdf ',index+1,'/',len(shp_filenames),' without cropping from',
+                          os.path.basename(fp_shp))
+            print('\twrite gdf(s) to gpkg(s)')
+            print('\t\tto: ' + fp_dir_gpkg)
+            for index, filename_without_ext in enumerate(filenames_without_ext):
+                fp_gpkg = os.path.join(fp_dir_gpkg, filename_without_ext+'.gpkg')
+                gdf_prot_nrw_dict[prot_name][index].to_file(fp_gpkg,driver='GPKG')
+                print('\twrote ',index+1,'/',len(filenames_without_ext),'to',os.path.basename(fp_gpkg))
+            continue
+
+        # check if zipped data exists
+        if os.path.isfile(fp_dir_zip):
+            print('\tfound zipped data, unzipping')
+            print('\t\tfrom: '+fp_dir_zip)
+            print('\t\tto: '+fp_dir_shp)
+            with zipfile.ZipFile(fp_dir_zip, 'r') as zip_ref:
+                zip_ref.extractall(fp_dir_shp)
+            #os.remove(fp_dir_zip)
+            #print('\tunzipped data, removed zip file, now loading gdf(s)...')
+            print('\tunzipped data, now loading gdf(s)')
+            # continue with unzipped data (as above)
+            # parse only shp files
+            shp_filenames = [f for f in os.listdir(fp_dir_shp) if
+                         f.endswith('.shp')]  # e.g. ['vw_bsnpolygonproved.shp', ...]
+            filenames_without_ext = [] # e.g. [vw_bsnpolygonproved, ...]
+            gdf_prot_nrw_dict[prot_name] = []  # list for gdfs
+            for index, shp_file in enumerate(shp_filenames):
+                filenames_without_ext.append(os.path.splitext(shp_file)[0])
+                fp_shp = os.path.join(fp_dir_shp, shp_file)
+                try:
+                    gdf_prot_nrw_dict[prot_name].append(
+                        gpd.read_file(fp_shp, bbox=bbox, engine='fiona'))
+                    print('\tloaded gdf ',index+1,'/',len(shp_filenames),' and cropped to bound box from',
+                          os.path.basename(fp_shp))
+                except:
+                    print('\tno bound box defined, will not crop gdf!')
+                    gdf_prot_nrw_dict[prot_name].append(gpd.read_file(fp_shp))
+                    print('\tloaded gdf ',index+1,'/',len(shp_filenames),' without cropping from',
+                          os.path.basename(fp_shp))
+            print('\twrite gdf(s) to gpkg(s)')
+            print('\t\tto: ' + fp_dir_gpkg)
+            for index, filename_without_ext in enumerate(filenames_without_ext):
+                fp_gpkg = os.path.join(fp_dir_gpkg, filename_without_ext+'.gpkg')
+                gdf_prot_nrw_dict[prot_name][index].to_file(fp_dir_gpkg,driver='GPKG')
+                print('\twrote ',index+1,'/',len(filenames_without_ext),'to',os.path.basename(fp_gpkg))
+            continue
+
         # download zip if not already downloaded
         if os.path.isfile(fp_dir_zip) == False:
-            print('download '+filename_zip+' from:')
-            print('\t'+url_prot_linfos_dict[filename_zip])
-            os.chdir(fp_prot_nrw_raw_dir)
+            print('download '+filename_zip)
+            print('\tfrom: '+url_prot_linfos_dict[filename_zip])
+            os.chdir(fp_prot_nrw_raw_zip_dir)
             wget.download(url_prot_linfos_dict[filename_zip])
-            print('downloaded '+filename_zip+' to:')
-            print('\t'+fp_dir_zip)
+            print('downloaded '+filename_zip)
+            print('\tto: '+fp_dir_zip)
         # unzip
-        print('unzip '+filename_zip+' to:')
-        print('\t'+fp_prot_nrw_raw_dir)
+        print('unzip '+filename_zip)
         with zipfile.ZipFile(fp_dir_zip, 'r') as zip_ref:
-            zip_ref.extractall(fp_prot_nrw_raw_dir)
-        print('unzipped '+filename_zip+' to:')
-        print('\t'+fp_prot_nrw_raw_dir)
-        # delete zip
-        os.remove(fp_dir_zip)
-        print('deleted '+filename_zip+' from:')
-        print('\t'+fp_prot_nrw_raw_dir)
-
-        fp_dir_raw = os.path.splitext(filename_zip)[0]
-        check_dir(fp_dir_raw)
-
+            zip_ref.extractall(fp_dir_shp)
+        # os.remove(fp_dir_zip)
+        # print('\tunzipped data, removed zip file, now loading gdf(s)...')
+        print('\tunzipped data, now loading gdf(s)')        # continue with zipped data (as above)
+        # parse only shp files
+        shp_filenames = [f for f in os.listdir(fp_dir_shp) if
+                         f.endswith('.shp')]  # e.g. ['vw_bsnpolygonproved.shp', ...]
+        filenames_without_ext = []  # e.g. [vw_bsnpolygonproved, ...]
+        gdf_prot_nrw_dict[prot_name] = []  # list for gdfs
+        for index, shp_file in enumerate(shp_filenames):
+            filenames_without_ext.append(os.path.splitext(shp_file)[0])
+            fp_shp = os.path.join(fp_dir_shp, shp_file)
+            try:
+                gdf_prot_nrw_dict[prot_name].append(
+                    gpd.read_file(fp_dir_shp, bbox=bbox, engine='fiona'))
+                print('\tloaded gdf ', index + 1, '/', len(shp_filenames), ' and cropped to bound box from',
+                      os.path.basename(fp_shp))
+            except:
+                print('\tno bound box defined, will not crop gdf!')
+                gdf_prot_nrw_dict[prot_name].append(gpd.read_file(fp_dir_shp))
+                print('\tloaded gdf ', index + 1, '/', len(shp_filenames), ' without cropping from',
+                      os.path.basename(fp_shp))
+        print('\twrite gdf(s) to gpkg(s)')
+        print('\t\tto: ' + fp_dir_gpkg)
+        for index, filename_without_ext in enumerate(filenames_without_ext):
+            fp_gpkg = os.path.join(fp_dir_gpkg, filename_without_ext + '.gpkg')
+            gdf_prot_nrw_dict[prot_name][index].to_file(fp_gpkg, driver='GPKG')
+            print('\twrote ', index + 1, '/', len(filenames_without_ext), 'to', os.path.basename(fp_gpkg))
+        continue
 
 print('PART ONE processing time: '+str(int((time.time()-start_time_part1)/60))+' min '+str(int((time.time()-start_time_part1)%60))+' sec')
 
 #########################################
 # PART TWO: COMBINE DATA (POSTPROCESSING)
 #########################################
-
+start_time_part2 = time.time()
 print('---------------------------------------')
 print('PART TWO: COMBINE DATA (POSTPROCESSING)')
 print('---------------------------------------\n')
@@ -1523,7 +1641,7 @@ if use_hu and use_zensus_geb:
         print('took '+str(int((time.time()-start_time)/60))+'min '+str((time.time()-start_time)%60)+' s in total for hu_gfk_merkmal_analysis_df')
 
         # further statistics (comparison with hu data with zensus data)
-        list_zensus_geb_cells = list(geb_df[key_zensus_cellid].unique())
+        list_zensus_geb_cells = list(geb100m.df[key_zensus_cellid].unique()) # not needed here? dunno
         list_hu_wg_cells = list(gdf_hu.loc[gdf_hu[key_hu_alt_rel]==1,key_hu_cellid].unique())
         # todo move to function
         if perform_pre_analysis_zensus_data: # prerequisite: merkmals zuweisung only for gfk with set zensus-flag
@@ -1658,7 +1776,7 @@ if use_subareas and (use_hu and use_zensus_geb and use_rwb and use_ee_nrw):
     # ------------------------------------------------------
     # will use the following datasets:
     # a) HU ALKIS + ZENSUS      -> get number of houses per subarea with specific age (later with specific heiztyp too) # TODO WIP
-    # b) RWB LANUV              -> get Wärmebedarf per subarea                                                          # TODO WIP
+    # b) RWB LANUV              -> get Wärmebedarf per subarea                                                          # TODO WIP seems to work
     # c) EE NRW LANUV           -> get installed power capacity per subarea per energy source                           # TODO WIP
 
     # Initialize GDFs for subareas to aggregate data into and HU (geometry = Points)
@@ -1672,10 +1790,10 @@ if use_subareas and (use_hu and use_zensus_geb and use_rwb and use_ee_nrw):
     # a) HU ALKIS + ZENSUS
     # --------------------
     # add columns to subareas geodataframe
-    gdf_subareas['alle_Geb_sum_ALKIS'] = 0                      # Anzahl aller Gebäude
-    gdf_subareas['beheizte_WonGeb_sum_ALKIS'] = 0               # Anzahl beheizter Wohngebäude, flags: zensus = 1, alt_rel = 0
-    gdf_subareas['beheizte_NichtWohnGeb_sum_ALKIS'] = 0         # Anzahl beheizter Nicht-Wohngeb, flags: zensus = 0, alt_rel = 1
-    gdf_subareas['unbeheizte_Geb_sum_ALKIS'] = 0                # Anzahl unbeheizter Gebäude, flags: zensus = 0, alt_rel = 0
+    gdf_subareas_aggr['Geb_sum_ALKIS'] = 0                      # Anzahl aller Gebäude
+    gdf_subareas_aggr['beheizte_WonGeb_sum_ALKIS'] = 0               # Anzahl beheizter Wohngebäude, flags: zensus = 1, alt_rel = 0
+    gdf_subareas_aggr['beheizte_NichtWohnGeb_sum_ALKIS'] = 0         # Anzahl beheizter Nicht-Wohngeb, flags: zensus = 0, alt_rel = 1
+    gdf_subareas_aggr['unbeheizte_Geb_sum_ALKIS'] = 0                # Anzahl unbeheizter Gebäude, flags: zensus = 0, alt_rel = 0
 
     for merkmal in key_hu_merkmale:
         for merkmals_auspraegung in merkmals_auspraegungen_dict[merkmal]:
@@ -1687,7 +1805,7 @@ if use_subareas and (use_hu and use_zensus_geb and use_rwb and use_ee_nrw):
     # https://gis.stackexchange.com/questions/262131/geopandas-intersects-speed
 
     subarea_indices_with_hu = [] # debug
-    subareas_epsg = gdf_subareas.crs.to_epsg()
+    subareas_epsg = gdf_subareas_aggr.crs.to_epsg()
 
     # combine hu alkis geodataframe with subareas geodataframe (check for hu within subareas)
     print('\nstart combining hu alkis geodataframe with subareas geodataframe (check for hu within subareas)...')
@@ -1696,22 +1814,32 @@ if use_subareas and (use_hu and use_zensus_geb and use_rwb and use_ee_nrw):
     gdf_hu_points = gdf_hu_points.to_crs(epsg=subareas_epsg) # project to subarea crs
     sjoin_gdf = gpd.sjoin(gdf_hu_points, gdf_subareas_aggr, op='within') # spatial join
 
-    # count number of Gebäude per subarea (hu)
+    # count number of Gebäude per subarea (hu) # todo fill NaN with 0, happens during gdf.index.map() below
     count_sjoin_gdf = sjoin_gdf['index_right'].value_counts()
-    gdf_subareas['alle_Geb_sum_ALKIS'] = gdf_subareas.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['Geb_sum_ALKIS'] = gdf_subareas_aggr.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['Geb_sum_ALKIS'] = gdf_subareas_aggr['Geb_sum_ALKIS'].fillna(0)
+
     # count number of Wohngebäude per subarea (hu with flags zensus = 1)
     count_sjoin_gdf = sjoin_gdf.loc[sjoin_gdf['zensus']==1]['index_right'].value_counts()
-    gdf_subareas['beheizte_WonGeb_sum_ALKIS'] = gdf_subareas.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['beheizte_WonGeb_sum_ALKIS'] = gdf_subareas_aggr.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['beheizte_WonGeb_sum_ALKIS'] = gdf_subareas_aggr['beheizte_WonGeb_sum_ALKIS'].fillna(0)
+
     # count number of beheizte Nichtwohngebäude per subarea (hu with flags zensus = 1, alt_rel = 0)
-    count_sjoin_gdf = sjoin_gdf.loc[(sjoin_gdf['zensus']==1) & (sjoin_gdf['alt_rel']==0)]['index_right'].value_counts()
-    gdf_subareas['beheizte_NichtWohnGeb_sum_ALKIS'] = gdf_subareas.index.map(count_sjoin_gdf)
+    count_sjoin_gdf = sjoin_gdf.loc[(sjoin_gdf['zensus']==0) & (sjoin_gdf['alt_rel']==1)]['index_right'].value_counts()
+    gdf_subareas_aggr['beheizte_NichtWohnGeb_sum_ALKIS'] = gdf_subareas_aggr.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['beheizte_NichtWohnGeb_sum_ALKIS'] = gdf_subareas_aggr['beheizte_NichtWohnGeb_sum_ALKIS'].fillna(0)
+
     # count number of unbeheizte Gebäude per subarea (hu with flags zensus = 0, alt_rel = 0)
     count_sjoin_gdf = sjoin_gdf.loc[(sjoin_gdf['zensus']==0) & (sjoin_gdf['alt_rel']==0)]['index_right'].value_counts()
-    gdf_subareas['unbeheizte_Geb_sum_ALKIS'] = gdf_subareas.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['unbeheizte_Geb_sum_ALKIS'] = gdf_subareas_aggr.index.map(count_sjoin_gdf)
+    gdf_subareas_aggr['unbeheizte_Geb_sum_ALKIS'] = gdf_subareas_aggr['unbeheizte_Geb_sum_ALKIS'].fillna(0)
+
     for merkmal in key_hu_merkmale:
         for merkmals_auspraegung in merkmals_auspraegungen_dict[merkmal]:
-            sum_sjoin_gdf_wb = sjoin_gdf.groupby('index_right')[merkmals_auspraegung].sum() # number of Wohngebäude with Merkmalsauasprägung in subareas
-            gdf_subareas_aggr[merkmals_auspraegung] = gdf_subareas_aggr.index.map(sum_sjoin_gdf_wb)
+            # count number of Gebäude with a specific merkmalsausprägung
+            count_sjoin_gdf = sjoin_gdf.loc[sjoin_gdf[merkmal]==merkmals_auspraegung]['index_right'].value_counts()
+            gdf_subareas_aggr[merkmals_auspraegung] = gdf_subareas_aggr.index.map(count_sjoin_gdf)
+            gdf_subareas_aggr[merkmals_auspraegung] = gdf_subareas_aggr[merkmals_auspraegung].fillna(0)
 
     # b) Raumwärmebedarfsmodell LANUV
     # -------------------------------
@@ -1747,18 +1875,22 @@ if use_subareas and (use_hu and use_zensus_geb and use_rwb and use_ee_nrw):
     # count number of Gebäude per subarea (hu)
     count_sjoin_gdf = sjoin_gdf['index_right'].value_counts()
     gdf_subareas_aggr['Geb_sum_LANUV'] = gdf_subareas_aggr.index.map(count_sjoin_gdf)
-    # sum up Wärmebedarf absolut in GWh/a, RWB uses kWh/a
-    sum_sjoin_gdf = sjoin_gdf.groupby('index_right')['WB_HU'].sum()
+    gdf_subareas_aggr['Geb_sum_LANUV'] = gdf_subareas_aggr['Geb_sum_LANUV'].fillna(0)
+    # sum up Wärmebedarf absolut, RWB uses kWh/a
+    sum_sjoin_gdf = sjoin_gdf.groupby('index_right')['WB_HU'].sum() # kWh/a of each hu summed up per subarea
     gdf_subareas_aggr['WBabsMWh/a_whole_subarea'] = gdf_subareas_aggr.index.map(sum_sjoin_gdf)
-    # spezifischer Wärmebedarf für Subarea
+    gdf_subareas_aggr['WBabsMWh/a_whole_subarea'] = gdf_subareas_aggr['WBabsMWh/a_whole_subarea'].fillna(0)
+    # spezifischer Wärmebedarf für Subarea with kWh/m2a
     gdf_subareas_aggr['WB_kWh/m2a_per_subarea'] = gdf_subareas_aggr['WBabsMWh/a_whole_subarea'] / gdf_subareas_aggr['FLAECHE']
+    # correct unit for Wärmebedarf absolut from kWh/a to MWh/a
+    gdf_subareas_aggr['WBabsMWh/a_whole_subarea'] = gdf_subareas_aggr['WBabsMWh/a_whole_subarea'] / 1000
 
     # combine hu geodataframe with subareas geodataframe (check for hu within subareas)
     print('number of subareas: '+str(len(gdf_subareas_aggr.index))+', number of hu: '+str(len(gdf_rwb_hu)))
 
     check_dir(fp_subareas_aggr_dir)
-    gdf_subareas_aggr.to_file(fp_subareas_aggr_dir + 'test2.shp', driver='ESRI Shapefile')
-    gdf_subareas_aggr.to_file(fp_subareas_aggr_dir + 'test2.gpkg', driver='GPKG')
+    gdf_subareas_aggr.to_file(os.path.join(fp_subareas_aggr_dir, 'test4.shp'), driver='ESRI Shapefile', OVERWRITE=True)
+    gdf_subareas_aggr.to_file(os.path.join(fp_subareas_aggr_dir, 'test4.gpkg'), driver='GPKG', OVERWRITE=True) # doesn't work on first shot but on second?!
 
     # c) EE_NRW
     # ---------
@@ -1778,8 +1910,8 @@ if use_subareas and (use_hu and use_zensus_geb and use_rwb and use_ee_nrw):
 
     print('took '+str(int((time.time()-start_time_dataset)/60))+'min '+str((time.time()-start_time_dataset)%60)+' s in total for assigning merkmale to hu')
 
+print('PART TWO processing time: '+str(int((time.time()-start_time_part2)/60))+' min '+str(int((time.time()-start_time_part2)%60))+' sec')
 
 ###############################################################################
 
-end_time_total = time.time()
-print('total processing time: '+str(int((end_time_total-start_time_total)/60))+' min '+str(int((end_time_total-start_time_total)%60))+' sec')
+print('total processing time: '+str(int((time.time()-start_time_total)/60))+' min '+str(int((time.time()-start_time_total)%60))+' sec')
