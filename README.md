@@ -17,8 +17,13 @@ Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deut
 - - filepaths and urls (partly to be set by user) (s. comments)
 - MAIN 
 - - PRE-PROCESSING: PART ONE (for single datasets)
+- - - <dataset1>
+- - - <dataset2>
+- - - ...
 - - POST-PROCESSING: PART TWO (for synthesis datasets)
-
+- - - <synthesis_dataset1>
+- - - <synthesis_dataset2>
+  
 # Verwendung des Tools
 0) Repo herunterladen (mindestens die main.py und /methods/function_list.py)
 1) Auswahl zu nutzender Daten (Selection of data to be used)
