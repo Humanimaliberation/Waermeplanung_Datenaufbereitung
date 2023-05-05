@@ -36,14 +36,15 @@ Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deut
 - -\> Links entweder in main.py unter SETTINGS, filepaths and urls in den Kommentaren
 - -\> oder Links in main.py unter PRE-PROCESSING: PART ONE, <dataset> in den Kommentaren am Anfang
 - -\> sonst in Thesis Text (andere Repository unter diesem Account) im Kapitel Datengrundlage, <dataset> [Quellenverweis]
-5) Ausführen
-6) QGIS starten
-7) in QGIS: Layer hinzufügen für gewünschten aufbereiteten Datensatz
+5) Python-Script (main.py) ausführen
+6) Optional: Aufbereitete Daten seperat begutachten oder autogenerierte Analyse-Dateien begutachten
+7) QGIS starten
+8) in QGIS: Layer hinzufügen für gewünschten aufbereiteten Datensatz
 - -\> Layer/Layer hinzufügen/Vector Layer mit Pfadangabe zu aufbereiteten Daten
-8) Gegebenenfalls QGIS-Layerstildateien (.qml) manuell aus dem Repository herunterladen zur besseren Darstellung der Daten
+9) Gegebenenfalls QGIS-Layerstildateien (.qml) manuell aus dem Repository herunterladen zur besseren Darstellung der Daten
 - -\> unter /qml_styles/\<dataset\> in diesem Repository
-9) in QGIS: Layerstil importieren
+10) in QGIS: Layerstil importieren
 - -\> Doppelklick auf das Layer (oder Rechtsklick und Eigenschaften), Layer Symbolisierung, unten auf Stil klicken und .qml Datei laden
-10) in QGIS: Gegebenfalls Layer kopieren, um gleiche Datenquelle als seperates Layer mit anderem Stil anzuzeigen
+11) in QGIS: Gegebenfalls Layer kopieren, um gleiche Datenquelle als seperates Layer mit anderem Stil anzuzeigen
 - -\> Rechtsklick auf das Layer, Layer duplizieren, umbenennen (z.B. in Anlehnung an die zu verwendende Stildatei)
 - -\> Layerstil wie in 9) importieren
