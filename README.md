@@ -48,3 +48,6 @@ Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deut
 11) in QGIS: Gegebenfalls Layer kopieren, um gleiche Datenquelle als seperates Layer mit anderem Stil anzuzeigen
 - -\> Rechtsklick auf das Layer, Layer duplizieren, umbenennen (z.B. in Anlehnung an die zu verwendende Stildatei)
 - -\> Layerstil wie in 9) importieren
+
+Note: Layerdefinitionsdateien (.qlr) funktionieren bei mir nicht in QGIS. Öffnen gibt eine Fehlermeldung aus.
+(Layerstil inklusive Filepointer zum theoretisch direkt das Layer inkl. Daten in QGIS laden)
