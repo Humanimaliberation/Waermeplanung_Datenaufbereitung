@@ -4,6 +4,9 @@ Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deut
 # Aufbau des Tools
 - In der main.py befindet sich der eigentliche Programmcode. Hier werden auch alle Einstellungen vorgenommen.
 - In /methods/function_list.py finden sich definierte Klassen und Funktionen. 
+- In /luts/ sind look-up-tables (derzeit eine zur Übersetzung der ALKIS-Hausumring Gebäudefunktion von Code zu Text und Klassifizierung von Gebäudetypen anhand der flags zensus und alt_rel
+- In /scripts/ sind scripte (derzeit ein bash script für die Amtlichen Basiskarten um viele .tif Dateien zu einem .vrt mosaic zusammen zu fügen, damit das Laden in QGIS auch für mehr als 800 Einzelkacheln funktioniert. Läuft außerdem schneller.) 
+- In /qml_styles/ sind Ordner für einzelne Datensätze mit .qml QGIS-Layerstildateien zur Darstellung der Daten (s.u. unter 9)ff.)
 
 # Gliederung der main.py
 - Kommentarblock zur Beschreibung
