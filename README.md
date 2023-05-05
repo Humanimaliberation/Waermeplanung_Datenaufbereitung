@@ -22,13 +22,13 @@ In /methods/function_list.py finden sich definierte Klassen und Funktionen.
 # Verwendung des Tools
 0) Repo herunterladen (mindestens die main.py und /methods/function_list.py)
 1) Auswahl zu nutzender Daten (Selection of data to be used)
-  -> in main.py unter SETTINGS, global settings, use_<dataset> = 1 setzen 
+- ->in main.py unter SETTINGS, global settings, use_<dataset> = 1 setzen 
 2) Weitere Einstellungen für die Datenaufbereitung vornehmen
-  -> in main.py unter SETTINGS, global settings, die anderen Variablen entsprechend setzen (Beschreibung in Kommentaren)
+- -> in main.py unter SETTINGS, global settings, die anderen Variablen entsprechend setzen (Beschreibung in Kommentaren)
 3) Dateipfaden setzen, wenn nötig
-  -> main.py unter SETTINGS, filepaths and urls, die entsprechenden Dateipfade setzen (Beschreibung in Kommentaren)
+- -> main.py unter SETTINGS, filepaths and urls, die entsprechenden Dateipfade setzen (Beschreibung in Kommentaren)
 4) Rohdaten manuell herunterladen, wenn nötig
-  -> Links entweder in main.py unter SETTINGS, filepaths and urls in den Kommentaren
-  -> oder Links in main.py unter PRE-PROCESSING: PART ONE, <dataset> in den Kommentaren am Anfang
-  -> sonst in Thesis Text (andere Repository unter diesem Account) im Kapitel Datengrundlage, <dataset> [Quellenverweis]
+- -> Links entweder in main.py unter SETTINGS, filepaths and urls in den Kommentaren
+- -> oder Links in main.py unter PRE-PROCESSING: PART ONE, <dataset> in den Kommentaren am Anfang
+- -> sonst in Thesis Text (andere Repository unter diesem Account) im Kapitel Datengrundlage, <dataset> [Quellenverweis]
 5) Ausführen
