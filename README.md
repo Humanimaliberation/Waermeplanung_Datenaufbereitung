@@ -36,7 +36,7 @@ Python Tool zur systematischen Aufbereitung von Daten für Wärmeplanungen (Deut
 - -\> Links entweder in main.py unter SETTINGS, filepaths and urls in den Kommentaren
 - -\> oder Links in main.py unter PRE-PROCESSING: PART ONE, <dataset> in den Kommentaren am Anfang
 - -\> sonst in Thesis Text (andere Repository unter diesem Account) im Kapitel Datengrundlage, <dataset> [Quellenverweis]
-5) Python-Script (main.py) ausführen
+5) Python-Script (main.py) ausführen (viel Infos im stdout)
 6) Optional: Aufbereitete Daten seperat begutachten oder autogenerierte Analyse-Dateien begutachten
 7) QGIS starten
 8) in QGIS: Layer hinzufügen für gewünschten aufbereiteten Datensatz
